@@ -18,6 +18,8 @@ jobs:
     services:
       redis:
         image: redis
+        ports:
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -25,33 +27,18 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: current
-
-      - uses: pnpm/action-setup@v2
-        with:
-          run_install: false
-          version: latest
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - run: pnpm install --frozen-lockfile --prefer-offline --silent --reporter silent
-      - run: pnpm ci:test
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn ci:test
         env:
-          REDIS_URI: redis://redis:6379
+          REDIS_URI: redis://localhost:6379
 
       - name: Create a new tag
-        run: pnpm ci:tag
+        run: yarn ci:tag
         env:
           GITHUBTOKEN: ${{ secrets.GIT_TOKEN }}
           LASTCOMMITSHA: ${{ github.SHA }}

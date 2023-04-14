@@ -15,10 +15,6 @@ services:
     volumes:
       - ~/.ssh:/home/node/.ssh
       - ../:/workspaces/app
-      - pnpm_cached:/workspaces/app/.pnpm-store
     command: /bin/sh -c "while sleep infinity; do :; done"
     links:
       - redis
-volumes:
-  pnpm_cached:
-    external: true
