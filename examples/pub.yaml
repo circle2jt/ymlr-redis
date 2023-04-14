@@ -1,0 +1,8 @@
+- tag'register:
+    ymlr-redis: ../src/index
+
+- name: Publish a message
+  ymlr-redis'pub:
+    uri: redis://redis:6379
+    channels: test
+    data: Hello world

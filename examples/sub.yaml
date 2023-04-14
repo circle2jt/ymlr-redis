@@ -1,0 +1,10 @@
+- tag'register:
+    ymlr-redis: ../src/index
+
+- name: Subcribe a channel
+  ymlr-redis'sub:
+    uri: redis://redis:6379
+    channels: test
+    runs:
+      - echo: ${ $parentState.channelName }
+      - echo: ${ $parentState.channelMsg }

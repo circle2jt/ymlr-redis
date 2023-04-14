@@ -1,0 +1,32 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish-npm:
+    name: Publish to npm registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          registry-url: ${{ vars.NPM_REGISTRY }}
+          node-version: current
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --prefer-offline --silent --reporter silent
+      - name: Publish with prod config
+        run: pnpm ci:publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create a new release
+        run: pnpm ci:release
+        env:
+          GITHUBTOKEN: ${{ secrets.GIT_TOKEN }}
+          LASTCOMMITSHA: ${{ github.SHA }}

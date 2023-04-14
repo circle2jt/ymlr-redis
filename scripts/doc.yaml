@@ -1,0 +1,16 @@
+- doc'md:
+    title: Tag details
+    includeDirs:
+      - ../src
+    includePattern: "^(?!.*\\.spec\\.ts$)"
+    excludeDirs:
+      - node_modules
+    prependMDs:
+      - path: ../INSTALLATION.md
+      - <br/>
+      - ""
+    appendMDs:
+      - <br/>
+      - ""
+      - "### Have fun :)"
+    saveTo: ../README.md

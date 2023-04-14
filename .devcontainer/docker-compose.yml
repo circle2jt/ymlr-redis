@@ -1,0 +1,24 @@
+version: '3'
+services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+  app:
+    build:
+      context: .
+      args:
+        VARIANT: 18-bullseye
+    environment:
+      - REDIS_URI=redis://redis:6379
+    user: node
+    volumes:
+      - ~/.ssh:/home/node/.ssh
+      - ../:/workspaces/app
+      - pnpm_cached:/workspaces/app/.pnpm-store
+    command: /bin/sh -c "while sleep infinity; do :; done"
+    links:
+      - redis
+volumes:
+  pnpm_cached:
+    external: true
