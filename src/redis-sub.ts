@@ -109,14 +109,26 @@ export class RedisSub extends Job {
     }
     assert(this.redis)
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    await this.redis.$.sub(this.channels, async (channel: string, message: Buffer | string) => {
-      await this.addJobData({
-        channelName: channel,
-        channelMsg: message,
-        channelData: this.tryToParseData(message.toString())
-      })
-    }, this.type)
+    if (this.channels.some(channel => channel.includes('*'))) {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      await this.redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
+        await this.addJobData({
+          channelPattern: pattern,
+          channelName: channel,
+          channelMsg: message,
+          channelData: this.tryToParseData(message.toString())
+        })
+      }, this.type)
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      await this.redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
+        await this.addJobData({
+          channelName: channel,
+          channelMsg: message,
+          channelData: this.tryToParseData(message.toString())
+        })
+      }, this.type)
+    }
   }
 
   async stop() {

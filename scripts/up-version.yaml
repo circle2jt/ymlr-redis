@@ -3,7 +3,8 @@ vars:
   preid: alpha
   versionName: prerelease
 runs:
-  - scene:
+  - name: ${ $vars.preid }/${ $vars.versionName }
+    scene:
       path: https://raw.githubusercontent.com/circle2jt/ymlr/feature/separate-element-proxy/shares/version.yaml
       vars:
         force: true

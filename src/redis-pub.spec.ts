@@ -17,9 +17,9 @@ test('publish a message', async () => {
   })
   // eslint-disable-next-line no-async-promise-executor, @typescript-eslint/no-misused-promises
   const t = new Promise(async (resolve) => {
-    await redis.$.sub([channelName], (channel: string, buf: Buffer) => {
+    await redis.$.sub([channelName], (channel: string, msg: string) => {
       Testing.vars.channel = channel
-      Testing.vars.data = buf.toString()
+      Testing.vars.data = msg
       resolve(undefined)
     })
   })
@@ -58,9 +58,9 @@ test('publish a message - used in ymlr-redis', async () => {
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
   const t = new Promise(async (resolve) => {
-    await sub.$.sub([channelName], (channel: string, buf: Buffer) => {
+    await sub.$.sub([channelName], (channel: string, msg: string) => {
       Testing.vars.channel = channel
-      Testing.vars.data = buf.toString()
+      Testing.vars.data = msg
       resolve(undefined)
     })
   })
@@ -91,7 +91,7 @@ test('publish a message - used the global redis', async () => {
   const redisSub: ElementProxy<Redis> = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI
   })
-  void redisSub.$.sub([channelName], (channel: string, buf: Buffer) => {
+  void redisSub.$.sub([channelName], (channel: string, buf: string) => {
     Testing.vars.channel = channel.toString()
     Testing.vars.data = buf.toString()
   }, 'buffer')
