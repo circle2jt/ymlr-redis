@@ -64,6 +64,7 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
   async pub(channels: string[] | string, data?: any) {
     if (!Array.isArray(channels)) channels = [channels]
     if (!channels?.length) return
+    if (this.callbacks) throw new Error('The redis is using "subscribe" mode. Could not publish')
     let msg = data ?? ''
     if (typeof msg === 'object' && !(msg instanceof Buffer)) {
       msg = JSON.stringify(msg)
@@ -79,8 +80,8 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
 
   async subMany(opts: Array<{
     channels: string[] | string
-    cb: OnMessageBufferCallback | OnMessageTextCallback
-    type: 'text' | 'buffer'
+    cb?: OnMessageBufferCallback | OnMessageTextCallback
+    type?: 'text' | 'buffer'
   }>) {
     await this.sub(opts.reduce((sum: string[], opt) => {
       if (Array.isArray(opt.channels)) sum.push(...opt.channels)
@@ -98,9 +99,7 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
     if (!Array.isArray(channels)) channels = [channels]
     if (!channels?.length) return
     this.logger.debug(`Subscribed "${channels}" in "${this.uri}"`)
-    if (this.client.mode === 'normal') {
-      await this.client.subscribe(...channels)
-    }
+    await this.client.subscribe(...channels)
     if (cb) {
       if (!this.callbacks) {
         this.callbacks = {
@@ -131,8 +130,8 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
 
   async psubMany(opts: Array<{
     channels: string[] | string
-    cb: OnPMessageBufferCallback | OnPMessageTextCallback
-    type: 'text' | 'buffer'
+    cb?: OnPMessageBufferCallback | OnPMessageTextCallback
+    type?: 'text' | 'buffer'
   }>) {
     await this.psub(opts.reduce((sum: string[], opt) => {
       if (Array.isArray(opt.channels)) sum.push(...opt.channels)
@@ -181,46 +180,22 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
     }
   }
 
-  async onPMessageBuffer(pattern: Buffer, channel: Buffer, message: Buffer) {
-    if (!this.callbacks) return
-    const callbacks = this.callbacks.buffer[pattern.toString()] as OnPMessageBufferCallback[]
-    if (!callbacks?.length) return
-    this.logger.debug('⇠ [%s]\t%s', channel, message)
-    await Promise.all(callbacks.map(cb => cb(pattern, channel, message)))
-  }
-
-  async onPMessage(pattern: string, channel: string, message: string) {
-    if (!this.callbacks) return
-    const callbacks = this.callbacks.text[pattern] as OnPMessageTextCallback[]
-    if (!callbacks?.length) return
-    this.logger.debug('⇠ [%s]\t%s', channel, message)
-    await Promise.all(callbacks.map(cb => cb(pattern, channel, message)))
-  }
-
-  async onMessageBuffer(channel: Buffer, message: Buffer) {
-    if (!this.callbacks) return
-    const callbacks = this.callbacks.buffer[channel.toString()] as OnMessageBufferCallback[]
-    if (!callbacks?.length) return
-    this.logger.debug('⇠ [%s]\t%s', channel, message)
-    await Promise.all(callbacks.map(cb => cb(channel, message)))
-  }
-
-  async onMessage(channel: string, message: string) {
-    if (!this.callbacks) return
-    const callbacks = this.callbacks.text[channel] as OnMessageTextCallback[]
-    if (!callbacks?.length) return
-    this.logger.debug('⇠ [%s]\t%s', channel, message)
-    await Promise.all(callbacks.map(cb => cb(channel, message)))
-  }
-
-  async unsub(channels?: string[]) {
-    if (!channels?.length) return
+  async unsub(channels: string[] | string, isRemoveCallback = true) {
+    if (typeof channels === 'string') {
+      channels = [channels]
+    }
+    if (!channels.length) return
     this.logger.debug(`Subscribed "${channels}" in "${this.uri}"`)
     await this.client.unsubscribe(...channels)
-    channels?.forEach(channel => {
-      delete this.callbacks?.text[channel]
-      delete this.callbacks?.buffer[channel]
-    })
+    if (isRemoveCallback) {
+      channels.forEach(channel => {
+        delete this.callbacks?.text[channel]
+        delete this.callbacks?.buffer[channel]
+      })
+      if (!this.callbacks?.text.length && !this.callbacks?.buffer.length) {
+        this.callbacks = undefined
+      }
+    }
   }
 
   async exec() {
@@ -241,5 +216,37 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
 
   async dispose() {
     await this.stop()
+  }
+
+  private async onPMessageBuffer(pattern: Buffer, channel: Buffer, message: Buffer) {
+    if (!this.callbacks) return
+    const callbacks = this.callbacks.buffer[pattern.toString()] as OnPMessageBufferCallback[]
+    if (!callbacks?.length) return
+    this.logger.debug('⇠ [%s]\t%s', channel, message)
+    await Promise.all(callbacks.map(cb => cb(pattern, channel, message)))
+  }
+
+  private async onPMessage(pattern: string, channel: string, message: string) {
+    if (!this.callbacks) return
+    const callbacks = this.callbacks.text[pattern] as OnPMessageTextCallback[]
+    if (!callbacks?.length) return
+    this.logger.debug('⇠ [%s]\t%s', channel, message)
+    await Promise.all(callbacks.map(cb => cb(pattern, channel, message)))
+  }
+
+  private async onMessageBuffer(channel: Buffer, message: Buffer) {
+    if (!this.callbacks) return
+    const callbacks = this.callbacks.buffer[channel.toString()] as OnMessageBufferCallback[]
+    if (!callbacks?.length) return
+    this.logger.debug('⇠ [%s]\t%s', channel, message)
+    await Promise.all(callbacks.map(cb => cb(channel, message)))
+  }
+
+  private async onMessage(channel: string, message: string) {
+    if (!this.callbacks) return
+    const callbacks = this.callbacks.text[channel] as OnMessageTextCallback[]
+    if (!callbacks?.length) return
+    this.logger.debug('⇠ [%s]\t%s', channel, message)
+    await Promise.all(callbacks.map(cb => cb(channel, message)))
   }
 }
