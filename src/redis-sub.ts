@@ -129,6 +129,7 @@ export class RedisSub extends Job {
         })
       }, this.type)
     }
+    await this.redis.$.waitToDone()
   }
 
   async stop() {

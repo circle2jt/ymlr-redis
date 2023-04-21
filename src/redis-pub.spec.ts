@@ -22,6 +22,7 @@ test('publish a message', async () => {
       Testing.vars.data = msg
       resolve(undefined)
     })
+    await redis.$.waitToDone()
   })
   await sleep(1000)
   const pub = await Testing.createElementProxy(RedisPub, {
@@ -63,6 +64,7 @@ test('publish a message - used in ymlr-redis', async () => {
       Testing.vars.data = msg
       resolve(undefined)
     })
+    await sub.$.waitToDone()
   })
   await sleep(1000)
   await redis.exec()
@@ -91,7 +93,7 @@ test('publish a message - used the global redis', async () => {
   const redisSub: ElementProxy<Redis> = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI
   })
-  void redisSub.$.sub([channelName], (channel: string, buf: string) => {
+  await redisSub.$.sub([channelName], (channel: string, buf: string) => {
     Testing.vars.channel = channel.toString()
     Testing.vars.data = buf.toString()
   }, 'buffer')

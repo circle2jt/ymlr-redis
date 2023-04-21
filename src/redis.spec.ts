@@ -34,37 +34,28 @@ test('pub/sub', async () => {
   const channelName = Math.random().toString()
   redis = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI,
-    channels: [channelName],
-    runs: [{
-      echo: 'hello'
-    }]
+    channels: [channelName]
   })
   await redis.exec()
   const channelCount = [0, 0]
   const subRedis1 = await redis.$.newOne()
   const subRedis2 = await redis.$.newOne()
   try {
-    await Promise.race([
-      new Promise((resolve: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        setTimeout(async () => {
-          await redis.$.pub(['channel-0'], 0)
-          await redis.$.pub(['channel-1'], 1)
-          await redis.$.pub(['channel-1'], 2)
-          await sleep(500)
-          await redis.$.stop()
-          resolve()
-        }, 500)
-      }),
-      subRedis1.$.sub(['channel-0'], (_: string, message: string) => {
-        expect(typeof message).toBe('string')
-        channelCount[0]++
-      }, 'text'),
-      subRedis2.$.sub(['channel-1'], (_: Buffer, message: Buffer) => {
-        expect(message).toBeInstanceOf(Buffer)
-        channelCount[1]++
-      }, 'buffer')
-    ])
+    await subRedis1.$.sub(['channel-0'], (_: string, message: string) => {
+      expect(typeof message).toBe('string')
+      channelCount[0]++
+    }, 'text')
+    await subRedis2.$.sub(['channel-1'], (_: Buffer, message: Buffer) => {
+      expect(message).toBeInstanceOf(Buffer)
+      channelCount[1]++
+    }, 'buffer')
+
+    await redis.$.pub(['channel-0'], 0)
+    await redis.$.pub(['channel-1'], 1)
+    await redis.$.pub(['channel-1'], 2)
+
+    await sleep(500)
+
     expect(channelCount[0]).toBe(1)
     expect(channelCount[1]).toBe(2)
   } finally {
@@ -77,37 +68,28 @@ test('ppub/sub', async () => {
   const channelName = Math.random().toString()
   redis = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI,
-    channels: [channelName],
-    runs: [{
-      echo: 'hello'
-    }]
+    channels: [channelName]
   })
   await redis.exec()
   const channelCount = [0, 0]
   const subRedis1 = await redis.$.newOne()
   const subRedis2 = await redis.$.newOne()
   try {
-    await Promise.race([
-      new Promise((resolve: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        setTimeout(async () => {
-          await redis.$.pub(['channel-0'], 0)
-          await redis.$.pub(['channel-1'], 1)
-          await redis.$.pub(['pchannel-1'], 2)
-          await sleep(500)
-          await redis.$.stop()
-          resolve()
-        }, 500)
-      }),
-      subRedis1.$.psub(['channel-*'], (_: string, message: string) => {
-        expect(typeof message).toBe('string')
-        channelCount[0]++
-      }, 'text'),
-      subRedis2.$.psub(['pchannel-*'], (_: Buffer, message: Buffer) => {
-        expect(message).toBeInstanceOf(Buffer)
-        channelCount[1]++
-      }, 'buffer')
-    ])
+    await subRedis1.$.psub(['channel-*'], (_: string, message: string) => {
+      expect(typeof message).toBe('string')
+      channelCount[0]++
+    }, 'text')
+    await subRedis2.$.psub(['pchannel-*'], (_: Buffer, message: Buffer) => {
+      expect(message).toBeInstanceOf(Buffer)
+      channelCount[1]++
+    }, 'buffer')
+
+    await redis.$.pub(['channel-0'], 0)
+    await redis.$.pub(['channel-1'], 1)
+    await redis.$.pub(['pchannel-1'], 2)
+
+    await sleep(500)
+
     expect(channelCount[0]).toBe(2)
     expect(channelCount[1]).toBe(1)
   } finally {
@@ -116,55 +98,28 @@ test('ppub/sub', async () => {
   }
 })
 
-test('sub many channels', async () => {
+test('sub waitToDone', async () => {
   const channelName = Math.random().toString()
   redis = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI,
-    channels: [channelName],
-    runs: [{
-      echo: 'hello'
-    }]
+    channels: [channelName]
   })
   await redis.exec()
-  const channelCount = [0, 0]
   const subRedis1 = await redis.$.newOne()
   try {
+    const begin = Date.now()
+    await subRedis1.$.sub('c1', () => { })
     await Promise.race([
-      new Promise((resolve: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        setTimeout(async () => {
-          await redis.$.pub(['channel-0'], 0)
-          await redis.$.pub(['channel-1'], 1)
-          await redis.$.pub(['channel-1'], 2)
-          await sleep(500)
-          await redis.$.stop()
-          resolve()
-        }, 500)
-      }),
-      subRedis1.$.subMany([{
-        channels: ['channel-0'],
-        cb: (_: string, message: string) => {
-          expect(typeof message).toBe('string')
-          channelCount[0]++
-        },
-        type: 'text'
-      }, {
-        channels: ['channel-1'],
-        cb: (_: Buffer, message: Buffer) => {
-          expect(message).toBeInstanceOf(Buffer)
-          channelCount[1]++
-        },
-        type: 'buffer'
-      }])
+      subRedis1.$.waitToDone(),
+      sleep(1000)
     ])
-    expect(channelCount[0]).toBe(1)
-    expect(channelCount[1]).toBe(2)
+    expect(Date.now() - begin).toBeGreaterThanOrEqual(1000)
   } finally {
     await subRedis1.dispose()
   }
 })
 
-test('psub many channels', async () => {
+test('sub callback', async () => {
   const channelName = Math.random().toString()
   redis = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI,
@@ -174,39 +129,31 @@ test('psub many channels', async () => {
     }]
   })
   await redis.exec()
-  const channelCount = [0, 0]
   const subRedis1 = await redis.$.newOne()
   try {
-    await Promise.race([
-      new Promise((resolve: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        setTimeout(async () => {
-          await redis.$.pub(['channel-0'], 0)
-          await redis.$.pub(['channel-1'], 1)
-          await redis.$.pub(['pchannel-1'], 2)
-          await sleep(500)
-          await redis.$.stop()
-          resolve()
-        }, 500)
+    let c1 = 0
+    let c2 = 0
+    const [, id2] = await Promise.all([
+      subRedis1.$.sub('c1', () => {
+        c1++
       }),
-      subRedis1.$.psubMany([{
-        channels: ['channel-*'],
-        cb: (_: string, message: string) => {
-          expect(typeof message).toBe('string')
-          channelCount[0]++
-        },
-        type: 'text'
-      }, {
-        channels: ['pchannel-*'],
-        cb: (_: Buffer, message: Buffer) => {
-          expect(message).toBeInstanceOf(Buffer)
-          channelCount[1]++
-        },
-        type: 'buffer'
-      }])
+      subRedis1.$.sub('c2', () => {
+        c2++
+      })
     ])
-    expect(channelCount[0]).toBe(2)
-    expect(channelCount[1]).toBe(1)
+
+    await redis.$.pub('c1')
+    await redis.$.pub('c2')
+    await sleep(200)
+    expect(c1).toBe(1)
+    expect(c2).toBe(1)
+
+    subRedis1.$.removeCb(id2)
+    await redis.$.pub('c1')
+    await redis.$.pub('c2')
+    await sleep(200)
+    expect(c1).toBe(2)
+    expect(c2).toBe(1)
   } finally {
     await subRedis1.dispose()
   }
