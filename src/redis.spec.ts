@@ -133,13 +133,13 @@ test('sub callback', async () => {
   try {
     let c1 = 0
     let c2 = 0
-    const [, id2] = await Promise.all([
+    const [id1, id2] = await Promise.all([
       subRedis1.$.sub('c1', () => {
         c1++
       }),
       subRedis1.$.sub('c2', () => {
         c2++
-      })
+      }, 'buffer')
     ])
 
     await redis.$.pub('c1')
@@ -148,12 +148,46 @@ test('sub callback', async () => {
     expect(c1).toBe(1)
     expect(c2).toBe(1)
 
-    subRedis1.$.removeCb(id2)
+    // @ts-expect-error
+    const callbacks = subRedis1.$.callbacks as any
+
+    expect(callbacks.id.size).toBe(2)
+    expect(callbacks.id.get(id2)).toBeDefined()
+    expect(callbacks.id.get(id1)).toBeDefined()
+    expect(callbacks.text.size).toBe(1)
+    expect(callbacks.buffer.size).toBe(1)
+    expect(callbacks.text.get('c1').size).toBe(1)
+    expect(callbacks.text.get('c2')).toBe(undefined)
+    expect(callbacks.buffer.get('c1')).toBe(undefined)
+    expect(callbacks.buffer.get('c2').size).toBe(1)
+
+    await subRedis1.$.removeCb(id2)
+    expect(callbacks.id.size).toBe(1)
+    expect(callbacks.id.get(id2)).toBeUndefined()
+    expect(callbacks.id.get(id1)).toBeDefined()
+    expect(callbacks.text.size).toBe(1)
+    expect(callbacks.buffer.size).toBe(0)
+    expect(callbacks.text.get('c1').size).toBe(1)
+    expect(callbacks.text.get('c2')).toBe(undefined)
+    expect(callbacks.buffer.get('c1')).toBe(undefined)
+    expect(callbacks.buffer.get('c2')).toBe(undefined)
+
     await redis.$.pub('c1')
     await redis.$.pub('c2')
     await sleep(200)
     expect(c1).toBe(2)
     expect(c2).toBe(1)
+    await subRedis1.$.removeCb(id1)
+
+    expect(callbacks.id.size).toBe(0)
+    expect(callbacks.id.get(id2)).toBeUndefined()
+    expect(callbacks.id.get(id1)).toBeUndefined()
+    expect(callbacks.text.size).toBe(0)
+    expect(callbacks.buffer.size).toBe(0)
+    expect(callbacks.text.get('c1')).toBe(undefined)
+    expect(callbacks.text.get('c2')).toBe(undefined)
+    expect(callbacks.buffer.get('c1')).toBe(undefined)
+    expect(callbacks.buffer.get('c2')).toBe(undefined)
   } finally {
     await subRedis1.dispose()
   }
