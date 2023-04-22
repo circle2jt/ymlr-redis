@@ -86,10 +86,12 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
   }
 
   private async _sub(subType: 'sub' | 'psub', channels: string[] | string, cb: OnMessageBufferCallback | OnMessageTextCallback | OnPMessageBufferCallback | OnPMessageTextCallback | undefined, type = 'text' as 'text' | 'buffer') {
+    let callbackType = 1
+    const callbackIDs = [] as string[]
     if (!Array.isArray(channels)) {
       channels = [channels]
+      callbackType = 0
     }
-    let callbackID: string = ''
     if (channels?.length) {
       this.logger.debug(`Subscribed "${channels}" in "${this.uri}"`)
       if (channels.length) {
@@ -133,9 +135,10 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
         channels.forEach((channel, i) => {
           if (!cbChannels.has(channel)) cbChannels.set(channel, new Set())
 
-          callbackID = `${type}:${channel}:${i}:${rd}`
+          const callbackID = `${type}:${channel}:${i}:${rd}`
           id.set(callbackID, cb)
           cbChannels.get(channel)?.add(id.get(callbackID))
+          callbackIDs.push(callbackID)
         })
 
         if (!this.promSubscribe) {
@@ -145,13 +148,17 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
         }
       }
     }
-    return callbackID
+    return callbackType === 1 ? callbackIDs : callbackIDs[0]
   }
 
+  async sub(channels: string, cb: OnMessageBufferCallback | OnMessageTextCallback | undefined, type?: 'text' | 'buffer'): Promise<string>
+  async sub(channels: string[], cb: OnMessageBufferCallback | OnMessageTextCallback | undefined, type?: 'text' | 'buffer'): Promise<string[]>
   async sub(channels: string[] | string, cb: OnMessageBufferCallback | OnMessageTextCallback | undefined, type = 'text' as 'text' | 'buffer') {
     return await this._sub('sub', channels, cb, type)
   }
 
+  async psub(channels: string, cb: OnPMessageBufferCallback | OnPMessageTextCallback | undefined, type?: 'text' | 'buffer'): Promise<string>
+  async psub(channels: string[], cb: OnPMessageBufferCallback | OnPMessageTextCallback | undefined, type?: 'text' | 'buffer'): Promise<string[]>
   async psub(channels: string[] | string, cb: OnPMessageBufferCallback | OnPMessageTextCallback | undefined, type = 'text' as 'text' | 'buffer') {
     return await this._sub('psub', channels, cb, type)
   }
@@ -183,8 +190,11 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
       .forEach((uuid: string) => {
         const [type, channel] = uuid.split(':')
         const cb = this.callbacks?.id.get(uuid)
-        // @ts-expect-error
-        this.callbacks?.[type]?.get(channel)?.delete(cb)
+        if (cb) {
+          // @ts-expect-error
+          const ch = this.callbacks?.[type]?.get(channel)
+          ch?.delete(cb)
+        }
         this.callbacks?.id.delete(uuid)
       })
   }

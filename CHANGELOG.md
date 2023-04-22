@@ -29,6 +29,5 @@
 
 * feat: Support psub, sub to many channels (9d9a12d)
 * refactor: replace pnpm to yarn (315c1fb)
-* feat: Refactor code from ymlr-mqtt (f222d4b)
 * initial (7db4041)
 
