@@ -2,13 +2,18 @@
 
 ## History
 
+- [1.1.5.md](#1682154208053)  -  _4/22/2023, 9:03:28 AM_
 - [1.1.4.md](#1682086415934)  -  _4/21/2023, 2:13:35 PM_
 - [1.1.2.md](#1682049570733)  -  _4/21/2023, 3:59:30 AM_
 - [1.1.1.md](#1681962216447)  -  _4/20/2023, 3:43:36 AM_
-- [1.1.0.md](#1681813688521)  -  _4/18/2023, 10:28:08 AM_
 
 ## Details
 
+<a id="1682154208053"></a>
+### 1.1.5
+
+* fix: return callback id wrong (e142d7f)
+  
 <a id="1682086415934"></a>
 ### 1.1.4
 
@@ -23,11 +28,4 @@
 ### 1.1.1
 
 * fix: could not subscribe many channels (91ddc83)
-  
-<a id="1681813688521"></a>
-### 1.1.0
-
-* feat: Support psub, sub to many channels (9d9a12d)
-* refactor: replace pnpm to yarn (315c1fb)
-* initial (7db4041)
 
