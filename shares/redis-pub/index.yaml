@@ -1,0 +1,10 @@
+vars:
+  redisURI: redis://:pwd@192.168.11.112:6379
+runs:
+  - name: Published to "${$vars.redisURI.split('@')[1]}"
+    ymlr-redis'pub:
+      uri: ${ $vars.redisURI }
+      channel: test_channel
+      data:
+        name: random
+        value: ${ Math.random() }

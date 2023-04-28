@@ -1,0 +1,23 @@
+vars:
+  redisURI: redis://:pwd@192.168.11.112:6379
+runs:
+  - id: redis
+    ymlr-redis:
+      uri: ${$vars.redisURI}
+      runs:
+        - js: |
+            await this.parent.client.ping()
+  - name: Redis connected to "${$vars.redisURI.split('@')[1]}"
+  - loop: ${true}
+    runs:
+      - input: 
+          message: Enter command
+        vars: cmd
+      - force: true
+        js:
+          if: ${$vars.cmd?.length}
+          script: |
+            const [cmd, ...args] = $vars.cmd.trim().split(' ').filter(a => !!a)
+            if (cmd.startsWith('clear')) return console.clear()
+            const rs = await $vars.redis.$.client.call(cmd, ...args)
+            this.logger.info('%O', rs)

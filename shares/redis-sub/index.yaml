@@ -1,0 +1,8 @@
+vars:
+  redisURI: redis://:pwd@192.168.11.112:6379
+runs:
+  - name: Subscribing "${$vars.redisURI.split('@')[1]}"
+    debug: all
+    ymlr-redis'sub:
+      uri: ${ $vars.redisURI }
+      channel: test_channel
