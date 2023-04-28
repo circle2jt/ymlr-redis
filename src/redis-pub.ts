@@ -78,6 +78,7 @@ export class RedisPub implements Element {
           uri: this.uri,
           opts: this.opts
         })
+        redis.logger = this.proxy.logger
       } else {
         redis = await this.proxy.getParentByClassName<Redis>(Redis)
       }
