@@ -15,6 +15,7 @@ test('publish a message', async () => {
   const redis = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
+  await redis.exec()
   // eslint-disable-next-line no-async-promise-executor, @typescript-eslint/no-misused-promises
   const t = new Promise(async (resolve) => {
     await redis.$.sub([channelName], (channel: string, msg: string) => {
@@ -33,7 +34,7 @@ test('publish a message', async () => {
   await pub.exec()
   await pub.dispose()
   await t
-  await redis.dispose()
+  await redis.$.stop()
   expect(Testing.vars.channel).toBe(channelName)
   expect(Testing.vars.data).toBe('hello world')
 })
@@ -57,6 +58,7 @@ test('publish a message - used in ymlr-redis', async () => {
   const sub = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
+  await sub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
   const t = new Promise(async (resolve) => {
     await sub.$.sub([channelName], (channel: string, msg: string) => {
@@ -69,10 +71,10 @@ test('publish a message - used in ymlr-redis', async () => {
   await sleep(1000)
   await redis.exec()
   await t
-  await sub.dispose()
+  await sub.$.stop()
   expect(Testing.vars.channel).toBe(channelName)
   expect(Testing.vars.data).toBe(JSON.stringify(data))
-  await redis.dispose()
+  await redis.$.stop()
 })
 
 test('publish a message - used the global redis', async () => {
@@ -93,6 +95,7 @@ test('publish a message - used the global redis', async () => {
   const redisSub: ElementProxy<Redis> = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI
   })
+  await redisSub.exec()
   await redisSub.$.sub([channelName], (channel: string, buf: string) => {
     Testing.vars.channel = channel.toString()
     Testing.vars.data = buf.toString()
@@ -103,6 +106,6 @@ test('publish a message - used the global redis', async () => {
   expect(Testing.vars.channel).toBe(channelName)
   expect(Testing.vars.data).toBe(JSON.stringify(data))
   await redisPub.dispose()
-  await redisSub.dispose()
-  await redis.dispose()
+  await redisSub.$.stop()
+  await redis.$.stop()
 })

@@ -10,7 +10,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await redis.dispose()
+  await redis.$.stop()
 })
 
 test('test redis', async () => {
@@ -59,8 +59,8 @@ test('pub/sub', async () => {
     expect(channelCount[0]).toBe(1)
     expect(channelCount[1]).toBe(2)
   } finally {
-    await subRedis1.dispose()
-    await subRedis2.dispose()
+    await subRedis1.$.stop()
+    await subRedis2.$.stop()
   }
 })
 
@@ -93,8 +93,8 @@ test('ppub/sub', async () => {
     expect(channelCount[0]).toBe(2)
     expect(channelCount[1]).toBe(1)
   } finally {
-    await subRedis1.dispose()
-    await subRedis2.dispose()
+    await subRedis1.$.stop()
+    await subRedis2.$.stop()
   }
 })
 
@@ -115,7 +115,7 @@ test('sub waitToDone', async () => {
     ])
     expect(Date.now() - begin).toBeGreaterThanOrEqual(1000)
   } finally {
-    await subRedis1.dispose()
+    await subRedis1.$.stop()
   }
 })
 
@@ -189,6 +189,6 @@ test('sub callback', async () => {
     expect(callbacks.text.get('c2')).toBe(undefined)
     expect(callbacks.buffer.get('c1')).toBe(undefined)
   } finally {
-    await subRedis1.dispose()
+    await subRedis1.$.stop()
   }
 })

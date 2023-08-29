@@ -104,6 +104,7 @@ export class RedisSub extends Job {
           opts: this.opts
         })
         this.redis.logger = this.proxy.logger
+        await this.redis.exec()
       } else {
         this.redis = await this.proxy.getParentByClassName<Redis>(Redis)
       }

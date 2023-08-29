@@ -32,6 +32,7 @@ test('Subscribe a channel in redis\'sub', async () => {
   const redisPub = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
+  await redisPub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setTimeout(async () => await redisPub?.$.pub(channelName, data), 1000)
   await redisSub.exec()
@@ -40,11 +41,11 @@ test('Subscribe a channel in redis\'sub', async () => {
   expect(Testing.vars.msg).toBe(JSON.stringify(data))
 
   await redisSub.dispose()
-  await redisPub?.dispose()
+  await redisPub?.$.stop()
 })
 
 test('Use the redis to subscribe a channel in redis\'sub', async () => {
-  const redis = await Testing.createElementProxy(Redis, {
+  const redis = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
   await redis.exec()
@@ -72,6 +73,7 @@ test('Use the redis to subscribe a channel in redis\'sub', async () => {
   const redisPub = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
+  await redisPub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setTimeout(async () => await redisPub?.$.pub(channelName, data), 1000)
 
@@ -81,12 +83,12 @@ test('Use the redis to subscribe a channel in redis\'sub', async () => {
   expect(Testing.vars.msg).toBe(JSON.stringify(data))
 
   await redisSub.dispose()
-  await redisPub?.dispose()
-  await redis.dispose()
+  await redisPub?.$.stop()
+  await redis.$.stop()
 })
 
 test('Use the redis to psubscribe a channel in redis\'sub', async () => {
-  const redis = await Testing.createElementProxy(Redis, {
+  const redis = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
   await redis.exec()
@@ -117,6 +119,7 @@ test('Use the redis to psubscribe a channel in redis\'sub', async () => {
   const redisPub = await Testing.createElementProxy<Redis>(Redis, {
     uri: process.env.REDIS_URI
   })
+  await redisPub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setTimeout(async () => await redisPub?.$.pub(channelName, data), 1000)
 
@@ -127,6 +130,6 @@ test('Use the redis to psubscribe a channel in redis\'sub', async () => {
   expect(Testing.vars.msg).toBe(JSON.stringify(data))
 
   await redisSub.dispose()
-  await redisPub?.dispose()
-  await redis.dispose()
+  await redisPub?.$.stop()
+  await redis.$.stop()
 })

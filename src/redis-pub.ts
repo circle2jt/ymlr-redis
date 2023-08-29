@@ -69,7 +69,7 @@ export class RedisPub implements Element {
     Object.assign(this, { channels, redis, ...props })
   }
 
-  async exec() {
+  async exec(parentState: any) {
     assert(this.channels.length > 0)
     let redis = this.redis
     if (!redis) {
@@ -79,6 +79,7 @@ export class RedisPub implements Element {
           opts: this.opts
         })
         redis.logger = this.proxy.logger
+        await this.redis.exec(parentState)
       } else {
         redis = await this.proxy.getParentByClassName<Redis>(Redis)
       }

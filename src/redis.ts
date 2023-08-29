@@ -45,21 +45,18 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
 
   private resolve?: Function
   private promSubscribe?: Promise<any>
-  private _client?: IORedis
-
-  get client() {
-    return this._client || (this._client = new IORedis(this.uri, this.opts || {}))
-  }
+  client!: IORedis
 
   constructor(private readonly _props: RedisProps) {
     const { uri, opts, ...props } = _props
     super(props as any)
     Object.assign(this, { uri, opts, _props })
-    this.ignoreEvalProps.push('callbacks', '_client', '_props', 'resolve', 'promSubscribe')
+    this.ignoreEvalProps.push('callbacks', 'client', '_props', 'resolve', 'promSubscribe')
   }
 
   async newOne() {
     const newOne = await (this.proxy.parent as Group<any, any>).newElementProxy<Redis>(Redis, this._props)
+    await newOne.exec()
     return newOne
   }
 
@@ -201,6 +198,7 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
 
   async exec() {
     assert(this.uri, '"uri" is required')
+    this.client = new IORedis(this.uri, this.opts || {})
     await new Promise((resolve, reject) => {
       this.client.on('connect', resolve).on('error', reject)
     })
@@ -211,11 +209,12 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
   async stop() {
     this.client.disconnect(false)
     if (this.resolve) this.resolve(undefined)
-    this._client = undefined
   }
 
   async dispose() {
-    await this.stop()
+    if (this.runs?.length) {
+      await this.stop()
+    }
   }
 
   private async onPMessageBuffer(pattern: Buffer, channel: Buffer, message: Buffer) {
