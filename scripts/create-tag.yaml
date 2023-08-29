@@ -5,7 +5,7 @@ vars:
 runs:
   - scene:
       title: Create a new tag
-      path: https://raw.githubusercontent.com/circle2jt/ymlr/feature/separate-element-proxy/shares/github.tag.yaml
+      path: https://raw.githubusercontent.com/circle2jt/ymlr/dev/shares/github.tag.yaml
       vars:
         token: ${ $vars.githubToken }
         lastCommitSHA: ${ $vars.lastCommitSHA }

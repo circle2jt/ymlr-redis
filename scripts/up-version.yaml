@@ -5,7 +5,7 @@ vars:
 runs:
   - name: ${ $vars.preid }/${ $vars.versionName }
     scene:
-      path: https://raw.githubusercontent.com/circle2jt/ymlr/feature/separate-element-proxy/shares/version.yaml
+      path: https://raw.githubusercontent.com/circle2jt/ymlr/dev/shares/version.yaml
       vars:
         force: true
         preid: ${ $vars.preid }
