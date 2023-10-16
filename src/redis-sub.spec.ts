@@ -25,7 +25,7 @@ test('Subscribe a channel in redis\'sub', async () => {
         }
       },
       {
-        'ymlr-redis\'stop': null
+        stop: null
       }
     ]
   })
@@ -66,7 +66,7 @@ test('Use the redis to subscribe a channel in redis\'sub', async () => {
         }
       },
       {
-        'ymlr-redis\'stop': null
+        stop: null
       }
     ]
   })
@@ -112,7 +112,7 @@ test('Use the redis to psubscribe a channel in redis\'sub', async () => {
         }
       },
       {
-        'ymlr-redis\'stop': null
+        stop: null
       }
     ]
   })

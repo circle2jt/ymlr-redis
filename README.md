@@ -13,8 +13,9 @@ ymlr-redis for ymlr plugin
 | Tags | Description |
 |---|---|
 | [ymlr-redis](#ymlr-redis) | Declare a redis connector |
+| [ymlr-redis'job](#ymlr-redis'job) | Add a new job with input data to do async |
+| [ymlr-redis'onJob](#ymlr-redis'onJob) | Handle jobs which is add by ymlr-redis'job |
 | [ymlr-redis'pub](#ymlr-redis'pub) | Publish a message to channels in redis |
-| [ymlr-redis'quit](#ymlr-redis'quit) | Stop subscribed. Only used in "ymlr-redis'sub" |
 | [ymlr-redis'sub](#ymlr-redis'sub) | Subscribe channels in redis |
 
 
@@ -44,6 +45,78 @@ Publish a message to channels
               - test
             data:
               msg: Hello world
+```  
+
+
+## <a id="ymlr-redis'job"></a>ymlr-redis'job  
+  
+Add a new job with input data to do async  
+
+Example:  
+
+```yaml
+  - name: Crop image size
+    ymlr-redis'job:
+      uri: redis://user:pass
+      opts:                               # ioredis options
+      name: Crop Image                    # Queue name
+      queueOpts:                          # Job queue options (https://docs.bullmq.io)
+      jobOpts:                            # Job options (https://docs.bullmq.io)
+        removeOnComplete: true
+      data:                               # Job data
+        url: http://...
+        type: jpeg
+        size:
+          width: 10
+          height: 10
+```
+
+Declare global then reused by code
+```yaml
+  - name: Crop image size
+    id: processImageJobsProxy
+    autoDispose: false                    # Dont release connection, keep it's used in background
+    ymlr-redis'job:
+      uri: redis://user:pass
+      opts:                               # ioredis options
+      name: Crop Image                    # Queue name
+      queueOpts:                          # Job queue options (https://docs.bullmq.io)
+      jobOpts:                            # Job options (https://docs.bullmq.io)
+        removeOnComplete: true
+
+  - js: |
+      await $vars.processImageJobsProxy.$.add({
+        url: 'http://...',
+        type: 'jpeg',
+        size: {
+          width: 10,
+          height: 10
+        }
+      }, {
+        removeOnFail: true
+      })
+```  
+
+
+## <a id="ymlr-redis'onJob"></a>ymlr-redis'onJob  
+  
+Handle jobs which is add by ymlr-redis'job  
+
+Example:  
+
+```yaml
+  - name: Handle to crop image size
+    ymlr-redis'onJob:
+      uri: redis://user:pass
+      opts:                                 # ioredis options
+        maxRetriesPerRequest:
+      name: Crop Image                      # Queue name
+      workerOpts:                           # Job worker options (https://docs.bullmq.io)
+        concurrency: 1
+      runs:
+        - echo: A new job has justed added
+        - echo: ${ $parentState.job }       # Job information
+        - echo: ${ $parentState.job.data }  # Job data
 ```  
 
 
@@ -99,22 +172,6 @@ Reuse redis connection to publish multiple times
 ```  
 
 
-## <a id="ymlr-redis'quit"></a>ymlr-redis'quit  
-  
-Stop subscribed. Only used in "ymlr-redis'sub"  
-
-Example:  
-
-```yaml
-  - ymlr-redis'sub:
-      uri: redis://redis:6379
-      channels:                   # Channels which is subscribed
-        - channel1
-      runs:                       # When a message is received then it will runs them
-        - ymlr-redis'stop:        # Stop subscribed
-```  
-
-
 ## <a id="ymlr-redis'sub"></a>ymlr-redis'sub  
   
 Subscribe channels in redis  
@@ -138,6 +195,8 @@ Example:
 
         - ...
         # Other elements
+
+        - stop:
 ```
 
 Used in global redis

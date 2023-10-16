@@ -74,12 +74,12 @@ export class RedisPub implements Element {
     let redis = this.redis
     if (!redis) {
       if (this.uri) {
-        redis = this.redis = await this.proxy.scene.newElementProxy(Redis, {
+        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
           uri: this.uri,
           opts: this.opts
         })
         redis.logger = this.proxy.logger
-        await this.redis.exec(parentState)
+        await redis.exec(parentState)
       } else {
         redis = await this.proxy.getParentByClassName<Redis>(Redis)
       }

@@ -1,0 +1,11 @@
+- ymlr-redis'newJob:
+    name: Test job
+    redis:
+    data:
+      name: Thanh
+
+- ymlr-redis'job:
+    name: Test job
+    redis:
+    runs:
+      - echo: ${ $parentState.job.data }

@@ -1,7 +1,8 @@
 import assert from 'assert'
 import { RedisOptions } from 'ioredis'
-import { Job } from 'ymlr/src/components/.job/job'
 import { ElementProxy } from 'ymlr/src/components/element-proxy'
+import { Group } from 'ymlr/src/components/group/group'
+import { GroupItemProps, GroupProps } from 'ymlr/src/components/group/group.props'
 import { Redis } from './redis'
 import { RedisSubProps } from './redis-sub.props'
 
@@ -25,6 +26,8 @@ import { RedisSubProps } from './redis-sub.props'
 
           - ...
           # Other elements
+
+          - stop:
   ```
 
   Used in global redis
@@ -74,7 +77,7 @@ import { RedisSubProps } from './redis-sub.props'
           # Other elements
   ```
 */
-export class RedisSub extends Job {
+export class RedisSub extends Group<GroupProps, GroupItemProps> {
   uri?: string
   channels: string[] = []
   type = 'text' as 'text' | 'buffer'
@@ -96,25 +99,27 @@ export class RedisSub extends Job {
     }
   }
 
-  async execJob() {
-    if (!this.redis) {
+  async exec(parentState?: any) {
+    let redis = this.redis
+    if (!redis) {
       if (this.uri) {
-        this.redis = await this.scene.newElementProxy(Redis, {
+        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
           uri: this.uri,
           opts: this.opts
         })
-        this.redis.logger = this.proxy.logger
-        await this.redis.exec()
+        redis.logger = this.proxy.logger
+        await redis.exec()
       } else {
-        this.redis = await this.proxy.getParentByClassName<Redis>(Redis)
+        redis = await this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
-    assert(this.redis)
+    assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
 
     if (this.channels.some(channel => channel.includes('*'))) {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      await this.redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
-        await this.addJobData({
+      await redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
+        await this.runEachOfElements({
+          ...parentState,
           channelPattern: pattern,
           channelName: channel,
           channelMsg: message,
@@ -123,20 +128,27 @@ export class RedisSub extends Job {
       }, this.type)
     } else {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      await this.redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
-        await this.addJobData({
+      await redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
+        await this.runEachOfElements({
+          ...parentState,
           channelName: channel,
           channelMsg: message,
           channelData: this.tryToParseData(message.toString())
         })
       }, this.type)
     }
-    await this.redis.$.waitToDone()
+    await redis.$.waitToDone()
+
+    return []
   }
 
   async stop() {
     await this.redis?.$.stop()
-    await super.stop()
     this.redis = undefined
+  }
+
+  async dispose() {
+    await this.stop()
+    await super.dispose()
   }
 }

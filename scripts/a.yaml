@@ -1,6 +1,0 @@
-debug: all
-runs:
-- exec'sh: |
-    git log --skip 0 -n 10 --pretty="format:* %s (%h)"
-  vars:
-    gitLog: ${this.result.split('\n').map(e => e.trim()).filter(e => e)}
