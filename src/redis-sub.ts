@@ -143,6 +143,7 @@ export class RedisSub extends Group<GroupProps, GroupItemProps> {
   }
 
   async stop() {
+    await this.redis?.$.unsub(this.channels, true)
     await this.redis?.$.stop()
     this.redis = undefined
   }
