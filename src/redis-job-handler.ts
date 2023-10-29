@@ -2,6 +2,7 @@ import assert from 'assert'
 import { Job, Worker, WorkerOptions } from 'bullmq'
 import { RedisOptions } from 'ioredis'
 import { ElementProxy } from 'ymlr/src/components/element-proxy'
+import { Element } from 'ymlr/src/components/element.interface'
 import { Group } from 'ymlr/src/components/group/group'
 import { GroupItemProps, GroupProps } from 'ymlr/src/components/group/group.props'
 import { Redis } from './redis'
@@ -24,7 +25,7 @@ import { Redis } from './redis'
           - echo: ${ $parentState.job.data }  # Job data
   ```
 */
-export class RedisJobHandler extends Group<GroupProps, GroupItemProps> {
+export class RedisJobHandler implements Element {
   uri?: string
   opts?: RedisOptions
   redis?: ElementProxy<Redis>
@@ -33,9 +34,10 @@ export class RedisJobHandler extends Group<GroupProps, GroupItemProps> {
 
   worker!: Worker
   private promHandler?: Promise<any>
+  innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
+  proxy!: ElementProxy<this>
 
-  constructor({ uri, opts, workerOpts, name, redis, ...props }: any) {
-    super(props)
+  constructor({ uri, opts, workerOpts, name, redis }: any) {
     Object.assign(this, { uri, opts, workerOpts, name, redis })
   }
 
@@ -45,7 +47,7 @@ export class RedisJobHandler extends Group<GroupProps, GroupItemProps> {
     let redis: ElementProxy<Redis> | undefined
     if (!this.redis) {
       if (this.uri) {
-        this.redis = redis = await this.scene.newElementProxy(Redis, {
+        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
           uri: this.uri,
           opts: {
             maxRetriesPerRequest: null,
@@ -61,7 +63,7 @@ export class RedisJobHandler extends Group<GroupProps, GroupItemProps> {
     assert(redis)
 
     this.worker = new Worker(this.name, async (job: Job) => {
-      return await this.runEachOfElements({
+      return await this.innerRunsProxy.exec({
         ...parentState,
         job
       })
@@ -90,6 +92,5 @@ export class RedisJobHandler extends Group<GroupProps, GroupItemProps> {
 
   async dispose() {
     await this.stop()
-    await super.dispose()
   }
 }

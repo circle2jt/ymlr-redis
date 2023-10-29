@@ -1,7 +1,8 @@
 import assert from 'assert'
 import { RedisOptions } from 'ioredis'
 import { ElementProxy } from 'ymlr/src/components/element-proxy'
-import { Group } from 'ymlr/src/components/group/group'
+import { Element } from 'ymlr/src/components/element.interface'
+import Group from 'ymlr/src/components/group'
 import { GroupItemProps, GroupProps } from 'ymlr/src/components/group/group.props'
 import { Redis } from './redis'
 import { RedisSubProps } from './redis-sub.props'
@@ -77,15 +78,17 @@ import { RedisSubProps } from './redis-sub.props'
           # Other elements
   ```
 */
-export class RedisSub extends Group<GroupProps, GroupItemProps> {
+export class RedisSub implements Element {
   uri?: string
   channels: string[] = []
   type = 'text' as 'text' | 'buffer'
   opts?: RedisOptions
   redis?: ElementProxy<Redis>
 
-  constructor({ uri, opts, type, channels = [], channel, redis, ...props }: RedisSubProps) {
-    super(props as any)
+  proxy!: ElementProxy<this>
+  innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
+
+  constructor({ uri, opts, type, channels = [], channel, redis }: RedisSubProps) {
     channel && channels.push(channel)
     Object.assign(this, { uri, opts, type, channels, redis })
     // this.ignoreEvalProps.push('redis')
@@ -118,7 +121,7 @@ export class RedisSub extends Group<GroupProps, GroupItemProps> {
     if (this.channels.some(channel => channel.includes('*'))) {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       await redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
-        await this.runEachOfElements({
+        await this.innerRunsProxy.exec({
           ...parentState,
           channelPattern: pattern,
           channelName: channel,
@@ -129,7 +132,7 @@ export class RedisSub extends Group<GroupProps, GroupItemProps> {
     } else {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       await redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
-        await this.runEachOfElements({
+        await this.innerRunsProxy.exec({
           ...parentState,
           channelName: channel,
           channelMsg: message,
@@ -150,6 +153,5 @@ export class RedisSub extends Group<GroupProps, GroupItemProps> {
 
   async dispose() {
     await this.stop()
-    await super.dispose()
   }
 }

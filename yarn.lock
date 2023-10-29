@@ -794,11 +794,6 @@
   resolved "https://registry.npmjs.org/@types/json5/-/json5-0.0.29.tgz"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
-"@types/luxon@~3.3.0":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.3.2.tgz#f6e3524c2486b949a4db445e85d93c8e9886dfe2"
-  integrity sha512-l5cpE57br4BIjK+9BSkFBOsWtwv6J9bJpC7gdXIzZyI0vuKvNTk0wZZrkQxMGsUAuGW9+WMNWF2IJMD7br2yeQ==
-
 "@types/node@*", "@types/node@^18.11.9":
   version "18.15.11"
   resolved "https://registry.npmjs.org/@types/node/-/node-18.15.11.tgz"
@@ -1368,14 +1363,6 @@ cron-parser@^4.6.0:
   integrity sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==
   dependencies:
     luxon "^3.2.1"
-
-cron@^3.1.0:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/cron/-/cron-3.1.1.tgz#124de337c82e42159e3261195099a12137003ac4"
-  integrity sha512-P8rDShXt2IZa16KwuYpbd1w7NjU4BnXeUEfkesBXT36JXhUsQ1P6i6ctsi5H82FQmR4tn/MOz05aB/3vn6dSkA==
-  dependencies:
-    "@types/luxon" "~3.3.0"
-    luxon "~3.3.0"
 
 cross-spawn@^7.0.2, cross-spawn@^7.0.3:
   version "7.0.3"
@@ -2866,11 +2853,6 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-lodash.clonedeep@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.npmjs.org/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz"
-  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
-
 lodash.defaults@^4.2.0:
   version "4.2.0"
   resolved "https://registry.npmjs.org/lodash.defaults/-/lodash.defaults-4.2.0.tgz"
@@ -2919,11 +2901,6 @@ luxon@^3.2.1:
   version "3.4.3"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.4.3.tgz#8ddf0358a9492267ffec6a13675fbaab5551315d"
   integrity sha512-tFWBiv3h7z+T/tDaoxA8rqTxy1CHV6gHS//QdaH4pulbq/JuBSGgQspQQqcgnwdAx6pNI7cmvz5Sv/addzHmUg==
-
-luxon@~3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.3.0.tgz#d73ab5b5d2b49a461c47cedbc7e73309b4805b48"
-  integrity sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==
 
 make-dir@^3.0.0:
   version "3.1.0"
@@ -3901,18 +3878,16 @@ yargs@^17.3.1:
     y18n "^5.0.5"
     yargs-parser "^21.1.1"
 
-ymlr@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/ymlr/-/ymlr-1.2.2.tgz#4c232e0a8fb2af2c493163d47a20bcf02e27bc3a"
-  integrity sha512-CTaUWLNXzwyEZHZGWD+dWNF/uiGQ80zLEImvSfipw7mtcNxz2Ubb8sFlMbTjrNe0t7zSiyr91/pHLEWcnU+eAg==
+ymlr@^1.2.3-alpha.7:
+  version "1.2.3-alpha.7"
+  resolved "https://registry.yarnpkg.com/ymlr/-/ymlr-1.2.3-alpha.7.tgz#26d18f9afb541e418c9dc2c6d9c17b542d1d0066"
+  integrity sha512-wIBzY2dyNfGAonkHzXiMk249HrT4Z4iCxLUsFbTFpcHkRY4yxU3bsYP3WMDWyR4ZCQjwt4rkir4mPIwQRyZhrQ==
   dependencies:
     axios "^1.3.4"
     chalk "^4.1.2"
     commander "^9.4.1"
-    cron "^3.1.0"
     form-data "^4.0.0"
     js-yaml "^4.1.0"
-    lodash.clonedeep "^4.5.0"
     lodash.merge "^4.6.2"
     lodash.toplainobject "^4.2.0"
     prompts "^2.4.2"
