@@ -75,7 +75,7 @@ Declare global then reused by code
 ```yaml
   - name: Crop image size
     id: processImageJobsProxy
-    detach: false                    # Dont release connection, keep it's used in background
+    detach: false                         # Dont release connection, keep it's used in background
     ymlr-redis'job:
       uri: redis://user:pass
       opts:                               # ioredis options

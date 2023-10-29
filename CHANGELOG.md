@@ -2,6 +2,7 @@
 
 ## History
 
+- [1.1.8-alpha.1.md](#1698592730579)  -  _10/29/2023, 3:18:50 PM_
 - [1.1.8-alpha.0.md](#1697429789835)  -  _10/16/2023, 4:16:29 AM_
 - [1.1.7.md](#1693292944886)  -  _8/29/2023, 7:09:04 AM_
 - [1.1.6.md](#1682659885256)  -  _4/28/2023, 5:31:25 AM_
@@ -12,6 +13,14 @@
 
 ## Details
 
+<a id="1698592730579"></a>
+### 1.1.8-alpha.1
+
+* fix: integrate with latest ymlr (4a39f52)
+* fix: Clean subscriber before dispose (35c4fc9)
+* doc: Update redis query (6e97a12)
+* doc: detach service (b27d007)
+  
 <a id="1697429789835"></a>
 ### 1.1.8-alpha.0
 
