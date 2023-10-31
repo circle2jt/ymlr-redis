@@ -68,30 +68,31 @@ import { RedisSubProps } from './redis-sub.props'
         channels:                             # channels which is subscribed
           - channel1
           - channel2
-        runs:                               # When a message is received then it will runs them
-          - ${ $parentState }               # - Received data in a channel
+        runs:                                 # When a message is received then it will runs them
+          - ${ $parentState }                 # - Received data in a channel
           - ${ $parentState.channelName }     # - channel name
           - ${ $parentState.channelData }     # - Received message which is cast to object
           - ${ $parentState.channelMsg }      # - Received message which is text
 
           - ...
           # Other elements
+
+          - stop:                             # - Stop subscribing
   ```
 */
 export class RedisSub implements Element {
+  readonly proxy!: ElementProxy<this>
+  readonly innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
+
   uri?: string
   channels: string[] = []
   type = 'text' as 'text' | 'buffer'
   opts?: RedisOptions
   redis?: ElementProxy<Redis>
 
-  proxy!: ElementProxy<this>
-  innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
-
   constructor({ uri, opts, type, channels = [], channel, redis }: RedisSubProps) {
     channel && channels.push(channel)
     Object.assign(this, { uri, opts, type, channels, redis })
-    // this.ignoreEvalProps.push('redis')
   }
 
   tryToParseData(msg: string) {

@@ -3,7 +3,7 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "build",
+      "script": "ci:build",
       "group": {
         "kind": "build",
         "isDefault": true
@@ -13,14 +13,20 @@
     },
     {
       "type": "npm",
-      "script": "test",
+      "script": "lint",
+      "problemMatcher": [],
+      "label": "Lint"
+    },
+    {
+      "type": "npm",
+      "script": "ci:test",
       "group": "test",
       "problemMatcher": [],
       "label": "Unit test"
     },
     {
       "type": "npm",
-      "script": "test:debug",
+      "script": "test",
       "group": "test",
       "problemMatcher": [],
       "label": "Debug unit test"

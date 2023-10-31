@@ -1,7 +1,9 @@
 import assert from 'assert'
 import { Redis as IORedis, RedisOptions } from 'ioredis'
+import { ElementProxy } from 'ymlr/src/components/element-proxy'
+import { Element } from 'ymlr/src/components/element.interface'
 import { Group } from 'ymlr/src/components/group/group'
-import { GroupItemProps } from 'ymlr/src/components/group/group.props'
+import { GroupItemProps, GroupProps } from 'ymlr/src/components/group/group.props'
 import { RedisProps } from './redis.props'
 
 export type OnMessageTextCallback = (channel: string, message: string) => any
@@ -33,7 +35,10 @@ export type OnPMessageBufferCallback = (pattern: Buffer, channel: Buffer, messag
                 msg: Hello world
   ```
 */
-export class Redis extends Group<RedisProps, GroupItemProps> {
+export class Redis implements Element {
+  readonly proxy!: ElementProxy<this>
+  readonly innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
+  readonly ignoreEvalProps = ['callbacks', 'resolve', 'promSubscribe']
   uri!: string
   opts?: RedisOptions
 
@@ -47,15 +52,16 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
   private promSubscribe?: Promise<any>
   client!: IORedis
 
-  constructor(private readonly _props: RedisProps) {
-    const { uri, opts, ...props } = _props
-    super(props as any)
-    Object.assign(this, { uri, opts, _props })
-    this.ignoreEvalProps.push('callbacks', 'client', '_props', 'resolve', 'promSubscribe')
+  get logger() {
+    return this.proxy.logger
+  }
+
+  constructor(private readonly props: RedisProps) {
+    Object.assign(this, props)
   }
 
   async newOne() {
-    const newOne = await (this.proxy.parent as Group<any, any>).newElementProxy<Redis>(Redis, this._props)
+    const newOne = await (this.proxy.parent as Group<any, any>).newElementProxy<Redis>(Redis, this.props)
     await newOne.exec()
     return newOne
   }
@@ -196,13 +202,13 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
       })
   }
 
-  async exec() {
+  async exec(parentState?: any) {
     assert(this.uri, '"uri" is required')
     this.client = new IORedis(this.uri, this.opts || {})
     await new Promise((resolve, reject) => {
       this.client.on('connect', resolve).on('error', reject)
     })
-    const rs = await super.exec()
+    const rs = await this.innerRunsProxy.exec(parentState)
     return rs
   }
 
@@ -212,9 +218,7 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
   }
 
   async dispose() {
-    if (this.runs?.length) {
-      await this.stop()
-    }
+    await this.stop()
   }
 
   private async onPMessageBuffer(pattern: Buffer, channel: Buffer, message: Buffer) {
