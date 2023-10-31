@@ -5,6 +5,7 @@ vars:
       value: clear
 runs:
   - id: redis
+    detach: true
     ymlr-redis:
       uri: ${$vars.redisURI}
       runs:
