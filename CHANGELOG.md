@@ -2,6 +2,7 @@
 
 ## History
 
+- [1.2.1.md](#1698739481393)  -  _10/31/2023, 8:04:41 AM_
 - [1.2.1-alpha.0.md](#1698658953155)  -  _10/30/2023, 9:42:33 AM_
 - [1.1.8-alpha.1.md](#1698592730579)  -  _10/29/2023, 3:18:50 PM_
 - [1.1.8-alpha.0.md](#1697429789835)  -  _10/16/2023, 4:16:29 AM_
@@ -14,6 +15,20 @@
 
 ## Details
 
+<a id="1698739481393"></a>
+### 1.2.1
+
+* fix: support latest ymlr (19c1803)
+* chore: prerelease 1.2.1-alpha.0 (6fc6cbe)
+* refactor: Integrate with latest ymlr version (4a45014)
+* chore: prerelease 1.1.8-alpha.1 (3c587a1)
+* fix: integrate with latest ymlr (4a39f52)
+* fix: Clean subscriber before dispose (35c4fc9)
+* doc: Update redis query (6e97a12)
+* doc: detach service (b27d007)
+* chore: prerelease 1.1.8-alpha.0 (7644275)
+* feat: add new queue job (4134bcb)
+  
 <a id="1698658953155"></a>
 ### 1.2.1-alpha.0
 

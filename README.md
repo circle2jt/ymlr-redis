@@ -236,14 +236,16 @@ Or reuse by global variable
       channels:                             # channels which is subscribed
         - channel1
         - channel2
-      runs:                               # When a message is received then it will runs them
-        - ${ $parentState }               # - Received data in a channel
+      runs:                                 # When a message is received then it will runs them
+        - ${ $parentState }                 # - Received data in a channel
         - ${ $parentState.channelName }     # - channel name
         - ${ $parentState.channelData }     # - Received message which is cast to object
         - ${ $parentState.channelMsg }      # - Received message which is text
 
         - ...
         # Other elements
+
+        - stop:                             # - Stop subscribing
 ```  
 
 
