@@ -1,8 +1,8 @@
 import assert from 'assert'
-import { JobsOptions, Queue, QueueOptions } from 'bullmq'
-import { RedisOptions } from 'ioredis'
-import { ElementProxy } from 'ymlr/src/components/element-proxy'
-import { Element } from 'ymlr/src/components/element.interface'
+import { Queue, type JobsOptions, type QueueOptions } from 'bullmq'
+import { type RedisOptions } from 'ioredis'
+import { type ElementProxy } from 'ymlr/src/components/element-proxy'
+import { type Element } from 'ymlr/src/components/element.interface'
 import { Redis } from './redis'
 
 /** |**  ymlr-redis'job
@@ -83,7 +83,7 @@ export class RedisJob implements Element {
         redis.logger = this.proxy.logger
         await redis.exec()
       } else {
-        redis = await this.proxy.getParentByClassName<Redis>(Redis)
+        redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
     assert(redis)

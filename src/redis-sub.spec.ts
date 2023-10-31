@@ -34,7 +34,7 @@ test('Subscribe a channel in redis\'sub', async () => {
   })
   await redisPub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  setTimeout(async () => await redisPub?.$.pub(channelName, data), 1000)
+  setTimeout(async () => { await redisPub?.$.pub(channelName, data) }, 1000)
   await redisSub.exec()
   expect(Testing.vars.channel).toBe(channelName)
   expect(Testing.vars.data).toEqual(data)
@@ -75,7 +75,7 @@ test('Use the redis to subscribe a channel in redis\'sub', async () => {
   })
   await redisPub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  setTimeout(async () => await redisPub?.$.pub(channelName, data), 1000)
+  setTimeout(async () => { await redisPub?.$.pub(channelName, data) }, 1000)
 
   await redisSub.exec()
   expect(Testing.vars.channel).toBe(channelName)
@@ -121,7 +121,7 @@ test('Use the redis to psubscribe a channel in redis\'sub', async () => {
   })
   await redisPub.exec()
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  setTimeout(async () => await redisPub?.$.pub(channelName, data), 1000)
+  setTimeout(async () => { await redisPub?.$.pub(channelName, data) }, 1000)
 
   await redisSub.exec()
   expect(Testing.vars.pattern).toBe(channelPattern)

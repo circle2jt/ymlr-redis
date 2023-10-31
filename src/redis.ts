@@ -1,10 +1,10 @@
 import assert from 'assert'
-import { Redis as IORedis, RedisOptions } from 'ioredis'
-import { ElementProxy } from 'ymlr/src/components/element-proxy'
-import { Element } from 'ymlr/src/components/element.interface'
-import { Group } from 'ymlr/src/components/group/group'
-import { GroupItemProps, GroupProps } from 'ymlr/src/components/group/group.props'
-import { RedisProps } from './redis.props'
+import { Redis as IORedis, type RedisOptions } from 'ioredis'
+import { type ElementProxy } from 'ymlr/src/components/element-proxy'
+import { type Element } from 'ymlr/src/components/element.interface'
+import { type Group } from 'ymlr/src/components/group/group'
+import { type GroupItemProps, type GroupProps } from 'ymlr/src/components/group/group.props'
+import { type RedisProps } from './redis.props'
 
 export type OnMessageTextCallback = (channel: string, message: string) => any
 export type OnPMessageTextCallback = (pattern: string, channel: string, message: string) => any
@@ -42,13 +42,13 @@ export class Redis implements Element {
   uri!: string
   opts?: RedisOptions
 
-  private callbacks?: {
+  callbacks?: {
     id: Map<string, OnMessageTextCallback | OnPMessageTextCallback>
     text?: Map<string, Set<OnMessageTextCallback> | Set<OnPMessageTextCallback>>
     buffer?: Map<string, Set<OnMessageBufferCallback> | Set<OnPMessageBufferCallback>>
   }
 
-  private resolve?: Function
+  private resolve?: (_: any) => void
   private promSubscribe?: Promise<any>
   client!: IORedis
 
@@ -194,7 +194,7 @@ export class Redis implements Element {
         const [type, channel] = uuid.split(':')
         const cb = this.callbacks?.id.get(uuid)
         if (cb) {
-          // @ts-expect-error
+          // @ts-expect-error system generate is always passed
           const ch = this.callbacks?.[type]?.get(channel)
           ch?.delete(cb)
         }

@@ -11,9 +11,9 @@
     "@types/ioredis": "^5.0.0",
     "@types/jest": "^29.2.1",
     "@types/node": "^18.11.9",
-    "@typescript-eslint/eslint-plugin": "^5.47.0",
-    "eslint": "^8.30.0",
-    "eslint-config-standard-with-typescript": "^24.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "eslint": "^8.49.0",
+    "eslint-config-standard-with-typescript": "^39.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -23,7 +23,7 @@
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.0",
-    "typescript": "^4.8.4",
+    "typescript": "^5.2.2",
     "ymlr": "^1.2.3"
   },
   "keywords": [

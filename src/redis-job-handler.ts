@@ -1,10 +1,10 @@
 import assert from 'assert'
-import { Job, Worker, WorkerOptions } from 'bullmq'
-import { RedisOptions } from 'ioredis'
-import { ElementProxy } from 'ymlr/src/components/element-proxy'
-import { Element } from 'ymlr/src/components/element.interface'
-import { Group } from 'ymlr/src/components/group/group'
-import { GroupItemProps, GroupProps } from 'ymlr/src/components/group/group.props'
+import { Worker, type Job, type WorkerOptions } from 'bullmq'
+import { type RedisOptions } from 'ioredis'
+import { type ElementProxy } from 'ymlr/src/components/element-proxy'
+import { type Element } from 'ymlr/src/components/element.interface'
+import { type Group } from 'ymlr/src/components/group/group'
+import { type GroupItemProps, type GroupProps } from 'ymlr/src/components/group/group.props'
 import { Redis } from './redis'
 
 /** |**  ymlr-redis'onJob
@@ -57,7 +57,7 @@ export class RedisJobHandler implements Element {
         redis.logger = this.proxy.logger
         await redis.exec()
       } else {
-        redis = await this.proxy.getParentByClassName<Redis>(Redis)
+        redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
     assert(redis)
@@ -72,7 +72,7 @@ export class RedisJobHandler implements Element {
       ...this.workerOpts
     })
     this.promHandler = new Promise((resolve, reject) => {
-      this.worker.on('error', err => reject(err))
+      this.worker.on('error', err => { reject(err) })
       this.worker.on('closed', () => {
         resolve(undefined)
       })

@@ -1,6 +1,6 @@
-import { RedisOptions } from 'ioredis'
-import { ElementProxy } from 'ymlr/src/components/element-proxy'
-import { Redis } from './redis'
+import { type RedisOptions } from 'ioredis'
+import { type ElementProxy } from 'ymlr/src/components/element-proxy'
+import { type Redis } from './redis'
 
 export interface RedisPubProps {
   redis?: ElementProxy<Redis>

@@ -1,4 +1,3 @@
-
 export const sub = () => require('./redis-sub').RedisSub
 export const pub = () => require('./redis-pub').RedisPub
 

@@ -1,5 +1,5 @@
 import { join } from 'path'
-import { ElementProxy } from 'ymlr/src/components/element-proxy'
+import { type ElementProxy } from 'ymlr/src/components/element-proxy'
 import { sleep } from 'ymlr/src/libs/time'
 import { Testing } from 'ymlr/src/testing'
 import { Redis } from './redis'

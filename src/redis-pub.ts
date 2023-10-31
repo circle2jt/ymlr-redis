@@ -1,9 +1,9 @@
 import assert from 'assert'
-import { RedisOptions } from 'ioredis'
-import { ElementProxy } from 'ymlr/src/components/element-proxy'
-import { Element } from 'ymlr/src/components/element.interface'
+import { type RedisOptions } from 'ioredis'
+import { type ElementProxy } from 'ymlr/src/components/element-proxy'
+import { type Element } from 'ymlr/src/components/element.interface'
 import { Redis } from './redis'
-import { RedisPubProps } from './redis-pub.props'
+import { type RedisPubProps } from './redis-pub.props'
 
 /** |**  ymlr-redis'pub
   Publish a message to channels in redis
@@ -81,7 +81,7 @@ export class RedisPub implements Element {
         redis.logger = this.proxy.logger
         await redis.exec(parentState)
       } else {
-        redis = await this.proxy.getParentByClassName<Redis>(Redis)
+        redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
     assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
