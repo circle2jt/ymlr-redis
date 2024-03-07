@@ -208,7 +208,10 @@ export class Redis implements Element {
     await new Promise((resolve, reject) => {
       this.client.on('connect', resolve).on('error', reject)
     })
-    const rs = await this.innerRunsProxy.exec(parentState)
+    const rs = await this.innerRunsProxy.exec({
+      ...parentState,
+      redis: this.client,
+    })
     return rs
   }
 
