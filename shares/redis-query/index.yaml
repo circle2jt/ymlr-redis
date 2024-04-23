@@ -8,9 +8,9 @@ runs:
     detach: true
     ymlr-redis:
       uri: ${$vars.redisURI}
-      runs:
-        - js: |
-            await this.parent.client.ping()
+    runs:
+      - js: |
+          await this.parent.client.ping()
   - name: Redis connected to "${$vars.redisURI.split('@')[1]}"
   - loop: ${true}
     runs:
