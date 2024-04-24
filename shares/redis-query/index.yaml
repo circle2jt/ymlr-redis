@@ -20,8 +20,7 @@ runs:
           default: ""
           suggestType: INCLUDE_AND_ALLOW_NEW
         vars: cmd
-      - force: true
-        js:
+      - js:
           if: ${$vars.cmd?.length}
           script: |
             const r = /("[^"]+"|[^\s"]+)/g
@@ -43,3 +42,5 @@ runs:
               title: $vars.cmd,
               value: $vars.cmd
             })
+        failure:
+          ignore: true
