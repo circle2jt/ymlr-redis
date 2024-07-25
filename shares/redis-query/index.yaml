@@ -37,7 +37,7 @@ runs:
             const [cmd, ...args] = sargs.filter(a => !!a)
             if (cmd.startsWith('clear')) return console.clear()
             const rs = await $vars.redis.$.client.call(cmd, ...args)
-            this.logger.log('%o', rs)
+            this.logger.info('%o', rs)
             $vars.histories.push({
               title: $vars.cmd,
               value: $vars.cmd
