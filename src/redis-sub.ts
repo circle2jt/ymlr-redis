@@ -63,6 +63,7 @@ import { type RedisSubProps } from './redis-sub.props'
 
     - name: "[redis] localhost"
       ymlr-redis'sub:
+        name: my-test-channel                 # channel name which to reused when register again
         redis: ${ $vars.redis }
         channel: channel1
         channels:                             # channels which is subscribed
@@ -81,18 +82,25 @@ import { type RedisSubProps } from './redis-sub.props'
   ```
 */
 export class RedisSub implements Element {
+  readonly ignoreEvalProps = ['t', '_resolve']
   readonly proxy!: ElementProxy<this>
   readonly innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
+
+  static SubNames = new Map<string, RedisSub>()
 
   uri?: string
   channels: string[] = []
   type = 'text' as 'text' | 'buffer'
   opts?: RedisOptions
   redis?: ElementProxy<Redis>
+  name?: string
 
-  constructor({ uri, opts, type, channels = [], channel, redis }: RedisSubProps) {
+  private _resolve: any
+  private t?: Promise<any>
+
+  constructor({ uri, opts, type, channels = [], channel, name, redis }: RedisSubProps) {
     channel && channels.push(channel)
-    Object.assign(this, { uri, opts, type, channels, redis })
+    Object.assign(this, { uri, opts, type, channels, redis, name })
   }
 
   tryToParseData(msg: string) {
@@ -104,21 +112,24 @@ export class RedisSub implements Element {
   }
 
   async exec(parentState?: any) {
-    let redis = this.redis
-    if (!redis) {
-      if (this.uri) {
-        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
-          uri: this.uri,
-          opts: this.opts
-        })
-        redis.logger = this.proxy.logger
-        await redis.exec()
+    let handler = this as RedisSub
+    if (this.name) {
+      const existed = RedisSub.SubNames.get(this.name)
+      if (!existed) {
+        RedisSub.SubNames.set(this.name, this)
       } else {
-        redis = this.proxy.getParentByClassName<Redis>(Redis)
+        handler = existed
       }
     }
-    assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
+    await handler.start(parentState)
 
+    return []
+  }
+
+  async start(parentState?: any) {
+    if (this.t) return await this.t
+
+    const redis = await this.getRedis()
     if (this.channels.some(channel => channel.includes('*'))) {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       await redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
@@ -141,18 +152,49 @@ export class RedisSub implements Element {
         })
       }, this.type)
     }
-    await redis.$.waitToDone()
-
-    return []
+    this.t = new Promise((resolve) => {
+      this._resolve = resolve
+    })
+    await this.t
   }
 
   async stop() {
-    await this.redis?.$.unsub(this.channels, true)
-    await this.redis?.$.stop()
+    if (!this.t) return false
+
+    const redis = await this.getRedis()
+    await redis.$.unsub(this.channels, true)
+    if (this.redis) {
+      await this.redis?.$.stop()
+    }
+    if (this.name) {
+      RedisSub.SubNames.delete(this.name)
+    }
     this.redis = undefined
+    this._resolve?.()
+    await this.t
+    this.t = undefined
+    return true
   }
 
   async dispose() {
     await this.stop()
+  }
+
+  private async getRedis() {
+    let redis = this.redis
+    if (!redis) {
+      if (this.uri) {
+        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
+          uri: this.uri,
+          opts: this.opts
+        })
+        redis.logger = this.proxy.logger
+        await redis.exec()
+      } else {
+        redis = await this.proxy.getParentByClassName<Redis>(Redis)
+      }
+    }
+    assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
+    return redis
   }
 }

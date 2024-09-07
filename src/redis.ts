@@ -210,7 +210,7 @@ export class Redis implements Element {
     })
     const rs = await this.innerRunsProxy.exec({
       ...parentState,
-      redis: this.client,
+      redis: this.client
     })
     return rs
   }

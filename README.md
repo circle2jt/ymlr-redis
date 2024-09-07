@@ -17,6 +17,7 @@ ymlr-redis for ymlr plugin
 | [ymlr-redis'onJob](#ymlr-redis'onJob) | Handle jobs which is add by ymlr-redis'job |
 | [ymlr-redis'pub](#ymlr-redis'pub) | Publish a message to channels in redis |
 | [ymlr-redis'sub](#ymlr-redis'sub) | Subscribe channels in redis |
+| [ymlr-redis'unsub](#ymlr-redis'unsub) | Unsubscribe channels in redis |
 
 
 
@@ -231,6 +232,7 @@ Or reuse by global variable
 
   - name: "[redis] localhost"
     ymlr-redis'sub:
+      name: my-test-channel                 # channel name which to reused when register again
       redis: ${ $vars.redis }
       channel: channel1
       channels:                             # channels which is subscribed
@@ -246,6 +248,29 @@ Or reuse by global variable
         # Other elements
 
         - stop:                             # - Stop subscribing
+```  
+
+
+## <a id="ymlr-redis'unsub"></a>ymlr-redis'unsub  
+  
+Unsubscribe channels in redis  
+
+Example:  
+
+```yaml
+  - name: "subscribe a channel"
+    ymlr-redis'sub:
+      name: test_channel1
+      uri: redis://user:pass
+      channel: channel1
+      runs:
+        - echo: ${ $parentState.channelName }
+
+  - name: unsubscribe a channel
+    ymlr-redis'unsub: test_channel1
+
+  - name: unsubscribe multiple channels
+    ymlr-redis'unsub: [test_channel1, test_channel2]
 ```  
 
 
