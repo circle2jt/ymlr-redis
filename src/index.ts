@@ -1,4 +1,5 @@
 export const sub = () => require('./redis-sub').RedisSub
+export const unsub = () => require('./redis-unsub').RedisUnsub
 export const pub = () => require('./redis-pub').RedisPub
 
 export const job = () => require('./redis-job').RedisJob
