@@ -2,6 +2,7 @@
 
 ## History
 
+- [1.2.2-alpha.0.md](#1725693155803)  -  _9/7/2024, 7:12:35 AM_
 - [1.2.1.md](#1698739481393)  -  _10/31/2023, 8:04:41 AM_
 - [1.2.1-alpha.0.md](#1698658953155)  -  _10/30/2023, 9:42:33 AM_
 - [1.1.8-alpha.1.md](#1698592730579)  -  _10/29/2023, 3:18:50 PM_
@@ -15,6 +16,20 @@
 
 ## Details
 
+<a id="1725693155803"></a>
+### 1.2.2-alpha.0
+
+* fix(lint): format code (7398f16)
+* chore: update yarn lock (cd55473)
+* Merge branch 'main' into dev (1aa8f8c)
+* feat: add new tag redis'unsub (20b0ab9)
+* scene: replace logger.log to logger.info (0048941)
+* Update index.yaml (594da40)
+* Update index.yaml (e53f999)
+* fix: pass redis in parentState (e363300)
+* refactor: replace typescript v4 to v5 (d5a347a)
+* fix: update redis-query script (b8280b1)
+  
 <a id="1698739481393"></a>
 ### 1.2.1
 
