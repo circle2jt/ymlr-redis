@@ -212,9 +212,7 @@ export class Redis extends Group<RedisProps, GroupItemProps> {
   }
 
   async dispose() {
-    if (this.runs?.length) {
-      await this.stop()
-    }
+    await this.stop()
   }
 
   private async onPMessageBuffer(pattern: Buffer, channel: Buffer, message: Buffer) {

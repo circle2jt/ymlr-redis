@@ -17,6 +17,7 @@ ymlr-redis for ymlr plugin
 | [ymlr-redis'onJob](#ymlr-redis'onJob) | Handle jobs which is add by ymlr-redis'job |
 | [ymlr-redis'pub](#ymlr-redis'pub) | Publish a message to channels in redis |
 | [ymlr-redis'sub](#ymlr-redis'sub) | Subscribe channels in redis |
+| [ymlr-redis'unsub](#ymlr-redis'unsub) | Unsubscribe channels in redis |
 
 
 
@@ -75,7 +76,7 @@ Declare global then reused by code
 ```yaml
   - name: Crop image size
     id: processImageJobsProxy
-    detach: false                    # Dont release connection, keep it's used in background
+    detach: false                         # Dont release connection, keep it's used in background
     ymlr-redis'job:
       uri: redis://user:pass
       opts:                               # ioredis options
@@ -231,19 +232,43 @@ Or reuse by global variable
 
   - name: "[redis] localhost"
     ymlr-redis'sub:
+      name: my-test-channel                 # channel name which to reused when register again
       redis: ${ $vars.redis }
       channel: channel1
       channels:                             # channels which is subscribed
         - channel1
         - channel2
-      runs:                               # When a message is received then it will runs them
-        - ${ $parentState }               # - Received data in a channel
+      runs:                                 # When a message is received then it will runs them
+        - ${ $parentState }                 # - Received data in a channel
         - ${ $parentState.channelName }     # - channel name
         - ${ $parentState.channelData }     # - Received message which is cast to object
         - ${ $parentState.channelMsg }      # - Received message which is text
 
         - ...
         # Other elements
+```  
+
+
+## <a id="ymlr-redis'unsub"></a>ymlr-redis'unsub  
+  
+Unsubscribe channels in redis  
+
+Example:  
+
+```yaml
+  - name: "subscribe a channel"
+    ymlr-redis'sub:
+      name: test_channel1
+      uri: redis://user:pass
+      channel: channel1
+      runs:
+        - echo: ${ $parentState.channelName }
+
+  - name: unsubscribe a channel
+    ymlr-redis'unsub: test_channel1
+
+  - name: unsubscribe multiple channels
+    ymlr-redis'unsub: [test_channel1, test_channel2]
 ```  
 
 
