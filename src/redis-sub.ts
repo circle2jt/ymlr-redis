@@ -191,7 +191,7 @@ export class RedisSub implements Element {
         redis.logger = this.proxy.logger
         await redis.exec()
       } else {
-        redis = await this.proxy.getParentByClassName<Redis>(Redis)
+        redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
     assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
