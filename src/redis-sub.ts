@@ -127,7 +127,7 @@ export class RedisSub implements Element {
   }
 
   async start(parentState?: any) {
-    if (this.t) return await this.t
+    if (this.t) return false
 
     const redis = await this.getRedis()
     if (this.channels.some(channel => channel.includes('*'))) {
@@ -156,6 +156,7 @@ export class RedisSub implements Element {
       this._resolve = resolve
     })
     await this.t
+    return true
   }
 
   async stop() {

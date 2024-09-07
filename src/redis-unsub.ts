@@ -43,12 +43,11 @@ export class RedisUnsub implements Element {
       const existed = RedisSub.SubNames.get(name)
       if (existed) {
         await existed.stop()
+        RedisSub.SubNames.delete(name)
       }
     }))
     return []
   }
 
-  async dispose() {
-    this.name?.forEach(name => RedisSub.SubNames.delete(name))
-  }
+  async dispose() { }
 }
