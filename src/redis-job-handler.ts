@@ -44,23 +44,22 @@ export class RedisJobHandler implements Element {
   async exec(parentState?: Record<string, any> | undefined) {
     assert(this.name)
 
-    let redis: ElementProxy<Redis> | undefined
     if (!this.redis) {
       if (this.uri) {
-        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
+        this.redis = await this.proxy.scene.newElementProxy(Redis, {
           uri: this.uri,
           opts: {
             maxRetriesPerRequest: null,
             ...this.opts
           }
         })
-        redis.logger = this.proxy.logger
-        await redis.exec()
+        this.redis.logger = this.proxy.logger
+        await this.redis.exec()
       } else {
-        redis = this.proxy.getParentByClassName<Redis>(Redis)
+        this.redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
-    assert(redis)
+    assert(this.redis)
 
     this.worker = new Worker(this.name, async (job: Job) => {
       return await this.innerRunsProxy.exec({
@@ -68,7 +67,7 @@ export class RedisJobHandler implements Element {
         job
       })
     }, {
-      connection: redis.$.client as any,
+      connection: this.redis.$.client as any,
       ...this.workerOpts
     })
     this.promHandler = new Promise((resolve, reject) => {
@@ -85,8 +84,10 @@ export class RedisJobHandler implements Element {
 
   async stop() {
     await this.worker?.close(true)
-    await this.redis?.$.stop()
-    this.redis = undefined
+    if (this.uri) {
+      await this.redis?.$.stop()
+      this.redis = undefined
+    }
     await this.promHandler
   }
 

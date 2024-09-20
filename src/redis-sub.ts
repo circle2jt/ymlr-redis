@@ -82,7 +82,7 @@ import { type RedisSubProps } from './redis-sub.props'
   ```
 */
 export class RedisSub implements Element {
-  readonly ignoreEvalProps = ['t', '_resolve']
+  readonly ignoreEvalProps = ['t', '_resolve', '_cbIDs']
   readonly proxy!: ElementProxy<this>
   readonly innerRunsProxy!: ElementProxy<Group<GroupProps, GroupItemProps>>
 
@@ -96,6 +96,7 @@ export class RedisSub implements Element {
   name?: string
 
   private _resolve: any
+  private readonly _cbIDs = [] as string[]
   private t?: Promise<any>
 
   constructor({ uri, opts, type, channels = [], channel, name, redis }: RedisSubProps) {
@@ -121,18 +122,33 @@ export class RedisSub implements Element {
         handler = existed
       }
     }
+
+    if (!this.redis) {
+      if (this.uri) {
+        this.redis = await this.proxy.scene.newElementProxy(Redis, {
+          uri: this.uri,
+          opts: this.opts
+        })
+        this.redis.logger = this.proxy.logger
+        await this.redis.exec()
+      } else {
+        this.redis = this.proxy.getParentByClassName<Redis>(Redis)
+      }
+    }
+    assert(this.redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
+
     await handler.start(parentState)
 
     return []
   }
 
   async start(parentState?: any) {
-    if (this.t) return false
+    if (this.t || !this.redis) return false
 
-    const redis = await this.getRedis()
+    let _cbIDs = []
     if (this.channels.some(channel => channel.includes('*'))) {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      await redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
+      _cbIDs = await this.redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
         await this.innerRunsProxy.exec({
           ...parentState,
           channelPattern: pattern,
@@ -141,9 +157,10 @@ export class RedisSub implements Element {
           channelData: this.tryToParseData(message.toString())
         })
       }, this.type)
+      this._cbIDs.push(..._cbIDs)
     } else {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      await redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
+      _cbIDs = await this.redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
         await this.innerRunsProxy.exec({
           ...parentState,
           channelName: channel,
@@ -152,6 +169,7 @@ export class RedisSub implements Element {
         })
       }, this.type)
     }
+    this._cbIDs.push(..._cbIDs)
     this.t = new Promise((resolve) => {
       this._resolve = resolve
     })
@@ -159,12 +177,15 @@ export class RedisSub implements Element {
     return true
   }
 
-  async stop() {
-    if (!this.t) return false
+  async stop(onlyRemoveCallback: boolean) {
+    if (!this.t || !this.redis) return false
 
-    const redis = await this.getRedis()
-    await redis.$.unsub(this.channels, true)
-    if (this.redis) {
+    if (!onlyRemoveCallback) {
+      await this.redis.$.unsub(this.channels, true)
+    } else {
+      await this.redis.$.removeCb(this._cbIDs)
+    }
+    if (this.uri) {
       await this.redis?.$.stop()
     }
     if (this.name) {
@@ -178,24 +199,6 @@ export class RedisSub implements Element {
   }
 
   async dispose() {
-    await this.stop()
-  }
-
-  private async getRedis() {
-    let redis = this.redis
-    if (!redis) {
-      if (this.uri) {
-        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
-          uri: this.uri,
-          opts: this.opts
-        })
-        redis.logger = this.proxy.logger
-        await redis.exec()
-      } else {
-        redis = this.proxy.getParentByClassName<Redis>(Redis)
-      }
-    }
-    assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
-    return redis
+    await this.stop(true)
   }
 }
