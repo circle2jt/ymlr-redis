@@ -258,19 +258,39 @@ Unsubscribe channels in redis
 Example:  
 
 ```yaml
-  - name: "subscribe a channel"
+  - name: "subscribe a channel1"
     ymlr-redis'sub:
       name: test_channel1
       uri: redis://user:pass
       channel: channel1
       runs:
-        - echo: ${ $parentState.channelName }
+        - echo: callback 01 ${ $parentState.channelName }
 
-  - name: unsubscribe a channel
-    ymlr-redis'unsub: test_channel1
+  - name: "subscribe a channel2"
+    ymlr-redis'sub:
+      name: test_channel2
+      uri: redis://user:pass
+      channel: channel1
+      runs:
+        - echo: callback 02 ${ $parentState.channelName }
 
-  - name: unsubscribe multiple channels
-    ymlr-redis'unsub: [test_channel1, test_channel2]
+  - name: keep subscribing channel "channel1" but remove all "callback 01"
+    # ymlr-redis'unsub: test_channel1
+    ymlr-redis'unsub:
+      name: test_channel1
+
+  - name: keep subscribing channel "channel1" but remove all "callback 01", "callback 02"
+    # ymlr-redis'unsub: [test_channel1, test_channel2]
+    ymlr-redis'unsub:
+      names: [test_channel1, test_channel2]
+
+  - name: unsubscribe channel "channel1"
+    ymlr-redis'unsub:
+      channel: test_channel1
+
+  - name: unsubscribe channel "channel1", "channel2"
+    ymlr-redis'unsub:
+      channels: [test_channel1, test_channel2]
 ```  
 
 
