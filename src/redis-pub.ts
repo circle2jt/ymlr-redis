@@ -71,21 +71,21 @@ export class RedisPub implements Element {
 
   async exec(parentState: any) {
     assert(this.channels.length > 0)
-    let redis = this.redis
-    if (!redis) {
+    if (!this.redis) {
       if (this.uri) {
-        this.redis = redis = await this.proxy.scene.newElementProxy(Redis, {
+        this.redis = await this.proxy.scene.newElementProxy(Redis, {
           uri: this.uri,
           opts: this.opts
         })
-        redis.logger = this.proxy.logger
-        await redis.exec(parentState)
+        this.redis.logger = this.proxy.logger
+        await this.redis.exec(parentState)
       } else {
-        redis = this.proxy.getParentByClassName<Redis>(Redis)
+        this.redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
-    assert(redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
-    await redis.$.pub(this.channels, this.data)
+    assert(this.redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
+
+    await this.redis.$.pub(this.channels, this.data)
     return this.data
   }
 

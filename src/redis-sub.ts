@@ -135,19 +135,19 @@ export class RedisSub implements Element {
         this.redis = this.proxy.getParentByClassName<Redis>(Redis)
       }
     }
-    assert(this.redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
 
     await handler.start(parentState)
 
     return []
   }
 
-  async start(parentState?: any) {
-    if (this.t || !this.redis) return false
+  async start(parentState: any) {
+    assert(this.redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
+
+    if (this.t) return false
 
     let _cbIDs = []
     if (this.channels.some(channel => channel.includes('*'))) {
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       _cbIDs = await this.redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
         await this.innerRunsProxy.exec({
           ...parentState,
@@ -159,7 +159,6 @@ export class RedisSub implements Element {
       }, this.type)
       this._cbIDs.push(..._cbIDs)
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       _cbIDs = await this.redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
         await this.innerRunsProxy.exec({
           ...parentState,
@@ -178,12 +177,12 @@ export class RedisSub implements Element {
   }
 
   async stop(onlyRemoveCallback: boolean) {
-    if (!this.t || !this.redis) return false
+    if (!this.t) return false
 
     if (!onlyRemoveCallback) {
-      await this.redis.$.unsub(this.channels, true)
+      await this.redis?.$.unsub(this.channels, true)
     } else {
-      await this.redis.$.removeCb(this._cbIDs)
+      await this.redis?.$.removeCb(this._cbIDs)
     }
     if (this.uri) {
       await this.redis?.$.stop()
