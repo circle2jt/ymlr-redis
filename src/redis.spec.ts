@@ -17,7 +17,8 @@ test('test redis', async () => {
   const channelName = Math.random().toString()
   redis = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI,
-    channels: [channelName],
+    channels: [channelName]
+  }, {
     runs: [{
       echo: 'hello'
     }]
@@ -123,7 +124,8 @@ test('sub callback', async () => {
   const channelName = Math.random().toString()
   redis = await Testing.createElementProxy(Redis, {
     uri: process.env.REDIS_URI,
-    channels: [channelName],
+    channels: [channelName]
+  }, {
     runs: [{
       echo: 'hello'
     }]

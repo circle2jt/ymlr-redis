@@ -21,7 +21,8 @@ test('handle a job', async () => {
 
   const redisJobHandler = await Testing.createElementProxy<RedisJobHandler>(RedisJobHandler, {
     uri: process.env.REDIS_URI,
-    name: jobName,
+    name: jobName
+  }, {
     runs: [{
       vars: {
         num: '${$parentState.job.data.num}'
@@ -50,7 +51,8 @@ test('test full integration', async () => {
   })
   const redisJobHandler = await Testing.createElementProxy<RedisJobHandler>(RedisJobHandler, {
     uri: process.env.REDIS_URI,
-    name: jobName,
+    name: jobName
+  }, {
     runs: [{
       vars: {
         numFull: '${$parentState.job.data.num}'

@@ -45,7 +45,8 @@ test('publish a message - used in ymlr-redis', async () => {
     say: 'hello world'
   }
   const redis: ElementProxy<Redis> = await Testing.createElementProxy<Redis>(Redis, {
-    uri: process.env.REDIS_URI,
+    uri: process.env.REDIS_URI
+  }, {
     runs: [
       {
         'ymlr-redis\'pub': {

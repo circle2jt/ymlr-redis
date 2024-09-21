@@ -88,6 +88,22 @@ export class Redis implements Element {
     }
   }
 
+  async subscribe(...channels: string[]) {
+    await this.client.subscribe(...channels)
+  }
+
+  async psubscribe(...channels: string[]) {
+    await this.client.psubscribe(...channels)
+  }
+
+  async unsubscribe(...channels: string[]) {
+    await this.client.unsubscribe(...channels)
+  }
+
+  async punsubscribe(...channels: string[]) {
+    await this.client.punsubscribe(...channels)
+  }
+
   private async _sub(subType: 'sub' | 'psub', channels: string[] | string, cb: OnMessageBufferCallback | OnMessageTextCallback | OnPMessageBufferCallback | OnPMessageTextCallback | undefined, type = 'text' as 'text' | 'buffer') {
     let callbackType = 1
     const callbackIDs = [] as string[]
@@ -99,9 +115,9 @@ export class Redis implements Element {
       this.logger.debug(`Subscribed "${channels}" in "${this.uri}"`)
       if (channels.length) {
         if (subType === 'sub') {
-          await this.client.subscribe(...channels)
+          await this.subscribe(...channels)
         } else {
-          await this.client.psubscribe(...channels)
+          await this.psubscribe(...channels)
         }
       }
       if (cb) {

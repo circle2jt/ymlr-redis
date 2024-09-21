@@ -79,6 +79,13 @@ import { type RedisSubProps } from './redis-sub.props'
           # Other elements
 
           - stop:                             # - Stop subscribing
+
+    - name: "subscribe channels again after unsubcribed"
+      ymlr-redis'sub:
+        redis: ${ $vars.redis }
+        channel: channel1
+        channels:                             # channels which is subscribed again
+          - channel2
   ```
 */
 export class RedisSub implements Element {
@@ -142,48 +149,57 @@ export class RedisSub implements Element {
   }
 
   async start(parentState: any) {
-    assert(this.redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
-
     if (this.t) return false
 
-    let _cbIDs = []
-    if (this.channels.some(channel => channel.includes('*'))) {
-      _cbIDs = await this.redis.$.psub(this.channels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
-        await this.innerRunsProxy.exec({
-          ...parentState,
-          channelPattern: pattern,
-          channelName: channel,
-          channelMsg: message,
-          channelData: this.tryToParseData(message.toString())
-        })
-      }, this.type)
-      this._cbIDs.push(..._cbIDs)
+    assert(this.redis, '"uri" is required OR "ymlr-redis\'pub" only be used in "ymlr-redis"')
+
+    const pchannels = this.channels.filter(channel => channel.includes('*'))
+    const nchannels = this.channels.filter(channel => !channel.includes('*'))
+    assert(pchannels?.length || nchannels?.length, 'channel is required')
+
+    if (this.innerRunsProxy?.runs?.length) {
+      if (pchannels.length) {
+        const _cbIDs = await this.redis.$.psub(pchannels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
+          await this.innerRunsProxy.exec({
+            ...parentState,
+            channelPattern: pattern,
+            channelName: channel,
+            channelMsg: message,
+            channelData: this.tryToParseData(message.toString())
+          })
+        }, this.type)
+        this._cbIDs.push(..._cbIDs)
+      }
+      if (nchannels.length) {
+        const _cbIDs = await this.redis.$.sub(nchannels, async (channel: string | Buffer, message: Buffer | string) => {
+          await this.innerRunsProxy.exec({
+            ...parentState,
+            channelName: channel,
+            channelMsg: message,
+            channelData: this.tryToParseData(message.toString())
+          })
+        }, this.type)
+        this._cbIDs.push(..._cbIDs)
+      }
+      this.t = new Promise((resolve) => {
+        this._resolve = resolve
+      })
+      await this.t
     } else {
-      _cbIDs = await this.redis.$.sub(this.channels, async (channel: string | Buffer, message: Buffer | string) => {
-        await this.innerRunsProxy.exec({
-          ...parentState,
-          channelName: channel,
-          channelMsg: message,
-          channelData: this.tryToParseData(message.toString())
-        })
-      }, this.type)
+      if (pchannels.length) {
+        await this.redis.$.psubscribe(...pchannels)
+      }
+      if (nchannels.length) {
+        await this.redis.$.subscribe(...nchannels)
+      }
     }
-    this._cbIDs.push(..._cbIDs)
-    this.t = new Promise((resolve) => {
-      this._resolve = resolve
-    })
-    await this.t
     return true
   }
 
-  async stop(onlyRemoveCallback: boolean) {
+  async stop() {
     if (!this.t) return false
 
-    if (!onlyRemoveCallback) {
-      await this.redis?.$.unsub(this.channels, true)
-    } else {
-      await this.redis?.$.removeCb(this._cbIDs)
-    }
+    await this.redis?.$.removeCb(this._cbIDs)
     if (this.uri) {
       await this.redis?.$.stop()
     }
@@ -198,6 +214,6 @@ export class RedisSub implements Element {
   }
 
   async dispose() {
-    await this.stop(true)
+    await this.stop()
   }
 }
