@@ -1,5 +1,5 @@
 export const sub = () => require('./redis-sub').RedisSub
-export const unsub = () => require('./redis-unsub').RedisUnsub
+export const unsub = () => require('./redis-unsub').RedisUnSub
 export const remove = () => require('./redis-remove-callback').RedisRemoveCallback
 export const pub = () => require('./redis-pub').RedisPub
 

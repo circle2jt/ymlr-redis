@@ -31,7 +31,6 @@ export class RedisUnSub implements Element {
   channels: string[] = []
   opts?: RedisOptions
   redis?: ElementProxy<Redis>
-  name?: string
 
   constructor({ uri, channels = [], channel, redis }: RedisUnSubProps) {
     channel && channels.push(channel)
