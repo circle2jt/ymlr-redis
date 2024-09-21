@@ -1,4 +1,4 @@
-import assert from 'assert'
+import { assert } from 'console'
 import { type ElementProxy } from 'ymlr/src/components/element-proxy'
 import { type Element } from 'ymlr/src/components/element.interface'
 import { RedisSub } from './redis-sub'
@@ -76,22 +76,28 @@ export class RedisUnsub implements Element {
   }
 
   async exec() {
-    let isOnlyRemoveCallback = false
+    assert(this.names?.length || this.channels?.length, 'name or channel is required')
+
     if (this.names) {
-      isOnlyRemoveCallback = true
       this.proxy.logger.debug(`Removed callbacks ${this.names?.join(',')}`)
+      await Promise.all(this.names.map(async name => {
+        const existed = RedisSub.SubNames.get(name)
+        if (existed) {
+          await existed.stop(true)
+          RedisSub.SubNames.delete(name)
+        }
+      }))
     } else if (this.channels) {
       this.proxy.logger.debug(`Unsubscribed channels ${this.channels?.join(',')}`)
+      await Promise.all(this.channels.map(async channel => {
+        const existed = RedisSub.SubNames.get(channel)
+        if (existed) {
+          await existed.stop(false)
+          RedisSub.SubNames.delete(channel)
+        }
+      }))
     }
 
-    assert(this.names?.length)
-    await Promise.all(this.names.map(async name => {
-      const existed = RedisSub.SubNames.get(name)
-      if (existed) {
-        await existed.stop(isOnlyRemoveCallback)
-        RedisSub.SubNames.delete(name)
-      }
-    }))
     return []
   }
 
