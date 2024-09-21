@@ -16,6 +16,7 @@ ymlr-redis for ymlr plugin
 | [ymlr-redis'job](#ymlr-redis'job) | Add a new job with input data to do async |
 | [ymlr-redis'onJob](#ymlr-redis'onJob) | Handle jobs which is add by ymlr-redis'job |
 | [ymlr-redis'pub](#ymlr-redis'pub) | Publish a message to channels in redis |
+| [ymlr-redis'remove](#ymlr-redis'remove) | Remove callbacks in channels after subscribing |
 | [ymlr-redis'sub](#ymlr-redis'sub) | Subscribe channels in redis |
 | [ymlr-redis'unsub](#ymlr-redis'unsub) | Unsubscribe channels in redis |
 
@@ -173,6 +174,33 @@ Reuse redis connection to publish multiple times
 ```  
 
 
+## <a id="ymlr-redis'remove"></a>ymlr-redis'remove  
+  
+Remove callbacks in channels after subscribing  
+
+Example:  
+
+```yaml
+  - id: redis
+    name: Global Redis
+    ymlr-redis:
+      uri: redis://user:pass
+
+  - name: "subscribe a channel1"
+    ymlr-redis'sub:
+      name: test_channel1
+      redis: ${ $vars.redis }
+      channel: channel1
+      runs:
+        - echo: callback 01 ${ $parentState.channelName }
+
+  - name: keep subscribing channels but it removes the handler "test_channel1"
+    ymlr-redis'unsub: test_channel1
+    # ymlr-redis'unsub: [test_channel1, test_channel2]
+
+```  
+
+
 ## <a id="ymlr-redis'sub"></a>ymlr-redis'sub  
   
 Subscribe channels in redis  
@@ -248,6 +276,13 @@ Or reuse by global variable
         # Other elements
 
         - stop:                             # - Stop subscribing
+
+  - name: "subscribe channels again after unsubcribed"
+    ymlr-redis'sub:
+      redis: ${ $vars.redis }
+      channel: channel1
+      channels:                             # channels which is subscribed again
+        - channel2
 ```  
 
 
@@ -258,39 +293,18 @@ Unsubscribe channels in redis
 Example:  
 
 ```yaml
-  - name: "subscribe a channel1"
-    ymlr-redis'sub:
-      name: test_channel1
+  - id: redis
+    name: Global Redis
+    ymlr-redis:
       uri: redis://user:pass
+
+  - name: "[redis] localhost"
+    ymlr-redis'unsub:
+      redis: ${ $vars.redis }
       channel: channel1
-      runs:
-        - echo: callback 01 ${ $parentState.channelName }
-
-  - name: "subscribe a channel2"
-    ymlr-redis'sub:
-      name: test_channel2
-      uri: redis://user:pass
-      channel: channel1
-      runs:
-        - echo: callback 02 ${ $parentState.channelName }
-
-  - name: keep subscribing channel "channel1" but remove all "callback 01"
-    # ymlr-redis'unsub: test_channel1
-    ymlr-redis'unsub:
-      name: test_channel1
-
-  - name: keep subscribing channel "channel1" but remove all "callback 01", "callback 02"
-    # ymlr-redis'unsub: [test_channel1, test_channel2]
-    ymlr-redis'unsub:
-      names: [test_channel1, test_channel2]
-
-  - name: unsubscribe channel "channel1"
-    ymlr-redis'unsub:
-      channel: test_channel1
-
-  - name: unsubscribe channel "channel1", "channel2"
-    ymlr-redis'unsub:
-      channels: [test_channel1, test_channel2]
+      channels:                             # channels which are unsubscribed
+        - channel1
+        - channel2
 ```  
 
 

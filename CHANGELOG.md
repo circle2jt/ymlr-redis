@@ -2,6 +2,7 @@
 
 ## History
 
+- [1.2.2-alpha.4.md](#1726896170638)  -  _9/21/2024, 5:22:50 AM_
 - [1.2.2-alpha.3.md](#1726846100973)  -  _9/20/2024, 3:28:20 PM_
 - [1.2.2-alpha.2.md](#1725697888838)  -  _9/7/2024, 8:31:28 AM_
 - [1.2.2-alpha.1.md](#1725695244834)  -  _9/7/2024, 7:47:24 AM_
@@ -19,6 +20,13 @@
 
 ## Details
 
+<a id="1726896170638"></a>
+### 1.2.2-alpha.4
+
+* feat(remove)!: add ymlr-remove (1ec695d)
+* fix: redis interupt (98d1014)
+* fix(unsub): not unsub channel with all callback (5a4e516)
+  
 <a id="1726846100973"></a>
 ### 1.2.2-alpha.3
 
