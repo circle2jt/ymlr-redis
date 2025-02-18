@@ -195,8 +195,7 @@ Example:
         - echo: callback 01 ${ $parentState.channelName }
 
   - name: keep subscribing channels but it removes the handler "test_channel1"
-    ymlr-redis'unsub: test_channel1
-    # ymlr-redis'unsub: [test_channel1, test_channel2]
+    ymlr-redis'remove: test_channel1
 
 ```  
 
