@@ -211,6 +211,7 @@ Example:
     ymlr-redis'sub:
       uri: redis://user:pass
       type: buffer                            # Message type is in [text, buffer]. Default is "text"
+      singleton: false                        # Only handle a job once time, the others will be skipped. Default is "false"
       channel: channel1
       channels:                               # channels which is subscribed
         - channel1
