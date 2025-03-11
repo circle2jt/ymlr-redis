@@ -8,6 +8,7 @@ export interface RedisSubProps {
   uri?: string
   type?: 'text' | 'buffer'
   opts?: RedisOptions
+  singleton?: boolean
   channels?: string[]
   channel?: string
 }

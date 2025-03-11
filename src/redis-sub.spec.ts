@@ -9,6 +9,44 @@ beforeEach(async () => {
   Testing.rootScene.tagsManager.register('ymlr-redis', join(__dirname, 'index'))
 })
 
+test('Subscribe a channel in redis\'sub with singleton mode', async () => {
+  const channelName = Math.random().toString()
+  Testing.vars.i = 0
+  const redisSub = await Testing.createElementProxy<RedisSub>(RedisSub, {
+    uri: process.env.REDIS_URI,
+    channel: channelName,
+    singleton: true
+  }, {
+    runs: [
+      {
+        name: '${ $v.i }',
+        js: '$v.i++'
+      },
+      {
+        sleep: 300
+      }
+    ]
+  })
+  const redisPub = await Testing.createElementProxy<Redis>(Redis, {
+    uri: process.env.REDIS_URI
+  })
+  await redisPub.exec()
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  setTimeout(async () => {
+    for (let i = 0; i < 5; i++) {
+      await redisPub?.$.pub(channelName, '')
+      await sleep(100)
+    }
+    await sleep(300)
+    await redisSub.$.stop()
+  }, 1000)
+  await redisSub.exec()
+  expect(Testing.vars.i).toBe(2)
+
+  await redisSub.dispose()
+  await redisPub?.$.stop()
+})
+
 test('Subscribe a channel in redis\'sub', async () => {
   const channelName = Math.random().toString()
   const data = {

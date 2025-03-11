@@ -2,7 +2,7 @@ import assert from 'assert'
 import { type RedisOptions } from 'ioredis'
 import { type ElementProxy } from 'ymlr/src/components/element-proxy'
 import { type Element } from 'ymlr/src/components/element.interface'
-import type Group from 'ymlr/src/components/group'
+import { type Group } from 'ymlr/src/components/group/group'
 import { type GroupItemProps, type GroupProps } from 'ymlr/src/components/group/group.props'
 import { Redis } from './redis'
 import { type RedisSubProps } from './redis-sub.props'
@@ -15,6 +15,7 @@ import { type RedisSubProps } from './redis-sub.props'
       ymlr-redis'sub:
         uri: redis://user:pass
         type: buffer                            # Message type is in [text, buffer]. Default is "text"
+        singleton: false                        # Only handle a job once time, the others will be skipped. Default is "false"
         channel: channel1
         channels:                               # channels which is subscribed
           - channel1
@@ -101,14 +102,15 @@ export class RedisSub implements Element {
   opts?: RedisOptions
   redis?: ElementProxy<Redis>
   name?: string
+  singleton?: boolean
 
   private _resolve: any
   private readonly _cbIDs = [] as string[]
   private t?: Promise<any>
 
-  constructor({ uri, opts, type, channels = [], channel, name, redis }: RedisSubProps) {
+  constructor({ uri, opts, type, channels = [], singleton, channel, name, redis }: RedisSubProps) {
     channel && channels.push(channel)
-    Object.assign(this, { uri, opts, type, channels, redis, name })
+    Object.assign(this, { uri, opts, type, channels, redis, name, singleton })
   }
 
   tryToParseData(msg: string) {
@@ -159,25 +161,47 @@ export class RedisSub implements Element {
 
     if (this.innerRunsProxy?.runs?.length) {
       if (pchannels.length) {
+        let isRunning: boolean
         const _cbIDs = await this.redis.$.psub(pchannels, async (pattern: string | Buffer, channel: string | Buffer, message: Buffer | string) => {
-          await this.innerRunsProxy.exec({
-            ...parentState,
-            channelPattern: pattern,
-            channelName: channel,
-            channelMsg: message,
-            channelData: this.tryToParseData(message.toString())
-          })
+          if (this.singleton) {
+            if (isRunning) return
+            isRunning = true
+          }
+          try {
+            await this.innerRunsProxy.exec({
+              ...parentState,
+              channelPattern: pattern,
+              channelName: channel,
+              channelMsg: message,
+              channelData: this.tryToParseData(message.toString())
+            })
+          } finally {
+            if (this.singleton) {
+              isRunning = false
+            }
+          }
         }, this.type)
         this._cbIDs.push(..._cbIDs)
       }
       if (nchannels.length) {
+        let isRunning: boolean
         const _cbIDs = await this.redis.$.sub(nchannels, async (channel: string | Buffer, message: Buffer | string) => {
-          await this.innerRunsProxy.exec({
-            ...parentState,
-            channelName: channel,
-            channelMsg: message,
-            channelData: this.tryToParseData(message.toString())
-          })
+          if (this.singleton) {
+            if (isRunning) return
+            isRunning = true
+          }
+          try {
+            await this.innerRunsProxy.exec({
+              ...parentState,
+              channelName: channel,
+              channelMsg: message,
+              channelData: this.tryToParseData(message.toString())
+            })
+          } finally {
+            if (this.singleton) {
+              isRunning = false
+            }
+          }
         }, this.type)
         this._cbIDs.push(..._cbIDs)
       }
