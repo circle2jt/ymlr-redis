@@ -188,7 +188,7 @@ export class Redis implements Element {
     }
     if (!channels.length) return
     this.logger.debug(`Subscribed "${channels}" in "${this.uri}"`)
-    await this.client.unsubscribe(...channels)
+    await this.unsubscribe(...channels)
     if (isRemoveCallback) {
       channels.forEach(channel => {
         Object.keys(this.callbacks?.id || {})
