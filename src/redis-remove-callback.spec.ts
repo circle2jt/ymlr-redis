@@ -54,6 +54,7 @@ test('Remove callback a channel in redis\'sub', async () => {
 
   await redisPub.$.pub(channelName, '')
   await redisPub.$.pub(channelName, '')
+  await sleep(500)
   expect(Testing.vars.i).toBe(2)
   expect(Testing.vars.j).toBe(4)
 
