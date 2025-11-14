@@ -63,7 +63,7 @@
   "homepage": "https://github.com/circle2jt/ymlr-redis#readme",
   "dependencies": {
     "bullmq": "^4.12.4",
-    "ioredis": "^5.3.1"
+    "ioredis": "5.6.1"
   },
   "publishConfig": {
     "access": "public",
